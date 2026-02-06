@@ -1,0 +1,24 @@
+# Database (users create their own from schema.sql)
+mydatabase.db
+mydatabase.db-journal
+mydatabase.db-wal
+
+# Session data (personal iteration images)
+sessions/*/
+
+# Reference images (personal)
+reference-images/*.png
+reference-images/*.jpg
+
+# Claude-mem plugin artifacts
+**/CLAUDE.md
+!./CLAUDE.md
+
+# Playwright MCP working directory (logs, screenshots)
+.playwright-mcp/
+
+# OS
+.DS_Store
+
+# Scratchpad
+scratchpad/
