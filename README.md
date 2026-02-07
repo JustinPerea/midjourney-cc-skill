@@ -16,15 +16,37 @@ You describe what you want
 
 Each session feeds the learning loop. The system tracks keyword effectiveness, failure modes, and technique patterns with evidence-based confidence levels. Over time, first-attempt success rates improve as the knowledge base grows.
 
-## Architecture
+## Repository Structure
 
-The system is split into three modules. Use only what you need:
+```
+.
+├── CLAUDE.md                  # Entry point — Claude reads this first to understand the system
+├── skill.md                   # Core prompt engineering: how to analyze references, build
+│                              #   prompts, score outputs, and iterate. Works standalone.
+├── learning.md                # Pattern tracking: how the system remembers what works across
+│                              #   sessions. Database schema, reflection, confidence graduation.
+├── automation.md              # Browser automation: how to control midjourney.com directly —
+│                              #   submit prompts, poll for results, capture images, run actions.
+├── schema.sql                 # Database setup script — run this once to create the 6 tables
+│                              #   that store sessions, iterations, patterns, and keyword data.
+├── knowledge/
+│   ├── v7-parameters.md       # Complete Midjourney V7 parameter reference (static)
+│   ├── translation-tables.md  # Visual quality → prompt keyword mappings (static)
+│   ├── prompt-templates/      # Ready-to-use prompt templates by category (static)
+│   ├── failure-modes.md       # Diagnostic framework + session-learned failures (mixed)
+│   ├── learned-patterns.md    # Auto-generated pattern summaries (populated through use)
+│   └── keyword-effectiveness.md  # Auto-generated keyword ratings (populated through use)
+├── .claude/commands/          # Slash command definitions (/new-session, /reflect, etc.)
+└── LICENSE
+```
 
-| Module | What it does | Dependencies |
-|--------|-------------|--------------|
-| **`skill.md`** | Core prompt engineering: reference analysis, prompt construction, scoring, iteration strategy | None |
-| **`learning.md`** | Pattern tracking: reflection, keyword effectiveness, confidence graduation, knowledge base generation | sqlite MCP |
-| **`automation.md`** | Browser control: submit prompts, capture results, perform upscale/variation actions on midjourney.com | playwright MCP |
+The three core modules can be adopted independently:
+
+| Module | What it does | Requires |
+|--------|-------------|----------|
+| **`skill.md`** | Reference analysis, prompt construction, 7-dimension scoring, iteration strategy | Nothing — works standalone |
+| **`learning.md`** | Pattern extraction, keyword tracking, confidence graduation, knowledge base generation | sqlite MCP server |
+| **`automation.md`** | Submit prompts, poll for generation, capture 4-image grids, run upscale/vary actions | playwright MCP server |
 
 ## Quick Start
 
@@ -86,18 +108,19 @@ The system submits prompts directly to midjourney.com, waits for generation, cap
 
 ## Knowledge Files
 
-The `knowledge/` directory contains reference material and learned data:
+Files in `knowledge/` fall into two categories:
 
-| File | Type | Contents |
-|------|------|----------|
-| `v7-parameters.md` | Static reference | Complete MJ V7 parameter guide |
-| `translation-tables.md` | Static reference | Visual quality → prompt keyword mappings |
-| `prompt-templates/` | Static reference | Ready-to-use templates by category |
-| `failure-modes.md` | Mixed | Diagnostic framework (static) + session-learned failures (dynamic) |
-| `learned-patterns.md` | Dynamic | Auto-generated from pattern database |
-| `keyword-effectiveness.md` | Dynamic | Auto-generated from keyword tracking |
+**Static reference** — ships with content, useful immediately:
+- `v7-parameters.md` — every MJ V7 parameter with syntax, defaults, and tips
+- `translation-tables.md` — maps visual qualities (e.g., "warm side lighting") to MJ keywords
+- `prompt-templates/` — copy-paste prompt skeletons for hero backgrounds, 3D abstract, product shots
 
-Dynamic files are regenerated after each reflection. They start empty and populate through use.
+**Dynamic / learned** — starts empty, populates through use:
+- `learned-patterns.md` — pattern summaries auto-generated from the database after `/reflect`
+- `keyword-effectiveness.md` — keyword ratings auto-generated from iteration data
+- `failure-modes.md` (bottom section) — session-learned failure modes appended during reflection
+
+The top half of `failure-modes.md` is a static diagnostic framework — decision trees for common problems organized by dimension (subject, composition, color, etc.).
 
 ## The Learning Loop
 

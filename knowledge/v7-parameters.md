@@ -161,6 +161,18 @@ Range: 0 to 4294967295. Same seed + same prompt = same result.
 - **Not always consistent** - Prompt, model version, and parameter changes can override seed effects
 - **Don't use with Turbo Mode** - Turbo focuses on speed; seed locking is unreliable
 
+### Repeat (`--repeat` or `--r`)
+
+Generate multiple image sets from a single prompt. Range: 2-40 (plan-dependent).
+
+| Plan | Max --repeat |
+|------|-------------|
+| Basic | 2 |
+| Standard | 4 |
+| Pro / Mega | 40 |
+
+**Use for:** Quickly generating many variations to pick from. Each repeat generates a full 4-image grid. Only works in Fast and Turbo modes.
+
 ### Negative Prompt (`--no`)
 
 Excludes elements from generation:
@@ -387,7 +399,129 @@ A photo with a huge invisible empty center area while the subject occupies the e
 
 ---
 
-## Parameter Cheat Sheet
+## Text Generation
+
+Use double quotation marks to render words in your images. Available in V6+.
+
+**Syntax:**
+```
+a neon sign that says "OPEN" in a dark alley
+a cartoon manual with the words "read the docs" in big text on the pages
+```
+
+**Best practices:**
+- Use **double quotes only** — single quotes and apostrophes don't work
+- Shorter words/phrases are more reliable than long sentences
+- Include context words like "with the words", "text", "written", "sign that says"
+- Works best with standard Latin alphabet (English letters)
+- If text is garbled: try `--style raw`, lower `--s`, or use the Editor/Vary Region to fix
+
+**Bad:** `a logo with the company name Boing` (no quotes)
+**Good:** `a pastel watercolor landscape with "imagine" written in the clouds`
+
+---
+
+## Permutations
+
+Generate multiple prompt variations from a single prompt using curly braces `{}`.
+
+**Syntax:**
+```
+a {red, green, yellow} bird        → generates 3 separate jobs
+a cat in a {forest, city, desert}  → generates 3 separate jobs
+a landscape --ar {1:1, 16:9, 2:3}  → tests 3 aspect ratios
+```
+
+**Works on any part of the prompt**, including parameters. Each permutation runs as a separate job consuming its own GPU time.
+
+**Plan limits:**
+| Plan | Max permutations per prompt |
+|------|----------------------------|
+| Basic | 4 |
+| Standard | 10 |
+| Pro / Mega | 40 |
+
+**Important:** Only works in Fast and Turbo modes. Not available in Relax mode.
+
+**Use cases for prompt engineering:**
+- A/B test keywords: `a portrait, {volumetric lighting, rim light, soft diffused light}`
+- Compare styles: `a cat, {oil painting, watercolor, pencil sketch} style`
+- Test parameters: `a landscape --s {50, 150, 300}`
+
+---
+
+## Upscalers
+
+V7 images start at 1024x1024 pixels (at 1:1). Upscaling doubles the dimensions.
+
+### Subtle vs Creative
+
+| Upscaler | What it does | Use when |
+|----------|-------------|----------|
+| **Subtle** | Doubles size, preserves original look as closely as possible | Final output is close to what you want |
+| **Creative** | Doubles size, may add new details and make small changes | You want refinement or want to fix minor issues (hands, faces) |
+
+**Pro tip:** Creative upscale can sometimes correct small issues like awkward hands or odd expressions. You can re-run Creative upscale multiple times — each produces a slightly different result.
+
+### Resolution by Aspect Ratio
+
+| Aspect Ratio | Initial | After Upscale |
+|-------------|---------|---------------|
+| 1:1 | 1024 x 1024 | 2048 x 2048 |
+| 4:3 | 1232 x 928 | 2464 x 1856 |
+| 2:3 | 896 x 1344 | 1792 x 2688 |
+| 16:9 | 1456 x 816 | 2912 x 1632 |
+
+**GPU cost:** Upscaling can take up to 2x the GPU minutes of the initial generation.
+
+**For larger sizes:** Use third-party upscalers (Topaz, TensorPix, DaVinci Resolve) after MJ upscale.
+
+---
+
+## Pan & Zoom Out
+
+### Pan
+
+Expand the canvas in any direction to reveal new content beyond the original frame.
+
+**Use when:**
+- Composition is good but you need more space on one side (e.g., for text overlay)
+- You want to extend a scene without regenerating
+
+**Note:** Not compatible with images made using `--oref`. Use the Editor instead.
+
+### Zoom Out
+
+Shrink the original image and fill in new surrounding content, creating a wider view of the scene.
+
+**Use when:**
+- Image is too tightly cropped
+- You want to reveal the environment around an existing subject
+- Building out a composition that started as a close-up
+
+**Note:** Not compatible with images made using `--oref`. Use the Editor instead.
+
+---
+
+## Artistic Mediums (from Official Docs)
+
+These medium keywords reliably produce distinct styles when used with V7. Tested format: `[medium] style [subject]`.
+
+### Print & Traditional
+Block Print, Ballpoint Pen Sketch, Cyanotype, Risograph, Ukiyo-e, Pencil Sketch, Watercolor, Pixel Art, Cross Stitch, Acrylic Pour, Cut Paper, Pressed Flowers, Oil Painting
+
+### Specialty
+Blacklight Painting, Paint-by-Numbers, Graffiti
+
+### Color Modes
+Millennial Pink, Acid Green, Sepia, Two Toned, Pastel, Duotone, Ebony, Neutral, CMYK, Indigo, Iridescent, Neon, Grayscale
+
+### Time Periods as Style
+Adding a decade (e.g., "1920s", "1970s", "1990s") to your prompt shifts the entire visual style to match that era's aesthetic — lighting, color grading, composition, and subject presentation all adjust.
+
+---
+
+
 
 ```
 --ar 16:9          Aspect ratio
@@ -407,8 +541,11 @@ A photo with a huge invisible empty center area while the subject occupies the e
 --oref [url]       Omni reference (characters/objects)
 --ow 200           Omni weight (0-1000)
 --iw 1.5           Image prompt weight (0-3)
+--repeat 4         Generate N image sets from one prompt (--r)
 --loop             Seamless video loop
 --motion low       Subtle animation
+"text here"        Render text in image (use double quotes)
+{opt1, opt2}       Permutations (generates separate jobs)
 ```
 
 ---
