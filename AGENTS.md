@@ -1055,26 +1055,80 @@ browser_type({ ref: [prompt_input_ref], text: "[full prompt with parameters]" })
 browser_press_key({ key: "Enter" })
 ```
 
-**3. Wait for Generation (Smart Polling)**
+**3. Wait for Generation (Multi-Signal Adaptive Polling)**
 
 Use `browser_run_code` for efficient polling instead of manual wait/snapshot cycles.
 This avoids consuming context with repeated DOM snapshots during the wait.
 
+The polling uses multiple independent signals to detect completion, making it resilient to UI changes:
+- **Action buttons** (Vary, Upscale, Rerun, Strong, Subtle) — most reliable positive signal
+- **CDN images** — 4+ loaded `cdn.midjourney.com` images indicate a finished grid
+- **Progress indicators** — percentage text or "Running"/"Queued" status means still generating
+- **Diagnostic dump on timeout** — captures visible buttons and image count so you can debug selector drift
+
 ```javascript
 browser_run_code({
   code: `async (page) => {
-    // Poll every 5s for up to 3 minutes
-    for (let i = 0; i < 36; i++) {
+    // Skip first 15s — no generation finishes faster
+    await page.waitForTimeout(15000);
+
+    // Poll every 5s for up to 3 minutes total
+    for (let i = 0; i < 33; i++) {
       await page.waitForTimeout(5000);
-      const trashButtons = await page.$$('button[aria-label="Trash Image"], button:has-text("Trash Image")');
-      if (trashButtons.length >= 4) {
-        return 'Generation complete (' + ((i + 1) * 5) + 's)';
+      const elapsed = 15 + ((i + 1) * 5);
+
+      // --- Positive signals (any = done) ---
+      // Check for action buttons (Vary, Upscale, Rerun, etc.)
+      const actionBtns = await page.$$([
+        'button:has-text("Vary")',
+        'button:has-text("Upscale")',
+        'button:has-text("Rerun")',
+        'button:has-text("Strong")',
+        'button:has-text("Subtle")',
+        'button:has-text("Creative Upscale")',
+        'button[aria-label*="Vary"]',
+        'button[aria-label*="Upscale"]'
+      ].join(', '));
+
+      if (actionBtns.length >= 2) {
+        return 'DONE: ' + actionBtns.length + ' action buttons found (' + elapsed + 's)';
+      }
+
+      // --- Negative signals (presence = still generating) ---
+      const progressText = await page.evaluate(() => {
+        const body = document.body.innerText;
+        const pctMatch = body.match(/(\\d{1,3})%/);
+        const running = body.includes('Running') || body.includes('Queued');
+        return { pct: pctMatch ? pctMatch[1] : null, running };
+      });
+
+      // If we see progress, we know it's actively generating — keep waiting
+      if (progressText.pct || progressText.running) continue;
+
+      // No progress AND no action buttons — might be in a transition state
+      // Check for loaded images as secondary signal
+      const images = await page.$$('img[src*="cdn.midjourney.com"]');
+      if (images.length >= 4) {
+        return 'DONE: ' + images.length + ' CDN images loaded (' + elapsed + 's)';
       }
     }
-    return 'Timeout after 180s';
+
+    // Timeout — collect diagnostic info
+    const diag = await page.evaluate(() => {
+      const buttons = [...document.querySelectorAll('button')].map(b => b.textContent.trim()).filter(t => t.length > 0 && t.length < 30);
+      const hasProgress = document.body.innerText.match(/(\\d{1,3})%/);
+      const imgCount = document.querySelectorAll('img').length;
+      return { buttons: buttons.slice(0, 15), progress: hasProgress ? hasProgress[1] + '%' : 'none', imgCount };
+    });
+    return 'TIMEOUT 180s. Diag: ' + JSON.stringify(diag);
   }`
 })
 ```
+
+**Interpreting results:**
+- `DONE: N action buttons found (Xs)` — normal completion, proceed to snapshot
+- `DONE: N CDN images loaded (Xs)` — completed but action buttons may have different selectors; proceed but note this for future selector updates
+- `TIMEOUT 180s. Diag: {...}` — check the diagnostic JSON: `buttons` shows what's actually in the DOM (use these labels to update selectors), `progress` indicates if generation is still running, `imgCount` shows total images on page
 
 After completion, take a snapshot to identify the job URL and action buttons:
 ```
