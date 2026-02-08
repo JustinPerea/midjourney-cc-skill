@@ -46,6 +46,7 @@ Each session feeds the learning loop. The system tracks keyword effectiveness, f
 │   ├── v7-parameters.md         # Complete Midjourney V7 parameter reference (static)
 │   ├── translation-tables.md    # Visual quality → prompt keyword mappings (static)
 │   ├── prompt-templates/        # Ready-to-use prompt templates by category (static)
+│   ├── official-docs.md         # Maps official MJ doc pages to internal files (freshness layer)
 │   ├── failure-modes.md         # Diagnostic framework + session-learned failures (mixed)
 │   ├── learned-patterns.md      # Auto-generated pattern summaries (populated through use)
 │   └── keyword-effectiveness.md # Auto-generated keyword ratings (populated through use)
@@ -118,6 +119,7 @@ The system submits prompts directly to midjourney.com, waits for generation, cap
 | `/research [focus]` | Research community techniques for a specific challenge |
 | `/show-knowledge [category]` | Display learned patterns |
 | `/apply-knowledge <description>` | Get pattern-informed prompt for a description |
+| `/discover-styles` | Browse and catalog MJ style codes from the Style Explorer |
 | `/validate-pattern [id]` | Mark a pattern as validated or contradicted |
 | `/forget-pattern [id]` | Deactivate a pattern |
 
@@ -127,6 +129,7 @@ Files in `knowledge/` fall into two categories:
 
 **Static reference** — ships with content, useful immediately:
 - `v7-parameters.md` — every MJ V7 parameter with syntax, defaults, and tips
+- `official-docs.md` — maps all official MJ doc pages to internal files for freshness checks
 - `translation-tables.md` — maps visual qualities (e.g., "warm side lighting") to MJ keywords
 - `prompt-templates/` — copy-paste prompt skeletons for hero backgrounds, 3D abstract, product shots
 
