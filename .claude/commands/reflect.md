@@ -6,7 +6,7 @@ Analyze iteration logs and extract/update patterns in the knowledge base.
 
 This command now serves as the **deep analysis** layer. Lightweight pattern extraction and
 markdown regeneration happen automatically when sessions close (see "Session Lifecycle & Automatic
-Reflection" in learning.md). Pattern confidence graduates automatically based on `times_tested` and
+Reflection" in `rules/learn-reflection.md`). Pattern confidence graduates automatically based on `times_tested` and
 `success_rate` thresholds — no manual review gate.
 
 `/reflect` adds:
@@ -16,6 +16,8 @@ Reflection" in learning.md). Pattern confidence graduates automatically based on
 - Force full knowledge base regeneration
 
 ## Instructions
+
+0. **Verify database access.** Run `SELECT COUNT(*) FROM sessions` via sqlite-simple MCP. If the query fails, tell the user: "Database not available. Run `claude mcp add sqlite-simple -- npx @anthropic-ai/sqlite-simple-mcp mydatabase.db` then restart Claude Code." Do not proceed without database access.
 
 1. **Gather recent data.** Query the database for sessions and iterations that haven't been reflected on yet (or all data if this is the first reflection):
 

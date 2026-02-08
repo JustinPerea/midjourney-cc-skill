@@ -4,6 +4,8 @@ Display the current state of learned knowledge, optionally filtered by category.
 
 ## Instructions
 
+0. **Verify database access.** Run `SELECT COUNT(*) FROM sessions` via sqlite-simple MCP. If the query fails, tell the user: "Database not available. Run `claude mcp add sqlite-simple -- npx @anthropic-ai/sqlite-simple-mcp mydatabase.db` then restart Claude Code." Do not proceed without database access.
+
 1. **Parse the optional category filter** from user input. Valid categories:
    - lighting, materials, forms, parameters, prompt-structure, color, composition, style, mood, v7, failure-modes, keywords
    - If no category specified, show an overview of all.

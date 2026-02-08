@@ -4,6 +4,8 @@ Deactivate a pattern that is no longer valid (e.g., after MJ version updates).
 
 ## Instructions
 
+0. **Verify database access.** Run `SELECT COUNT(*) FROM sessions` via sqlite-simple MCP. If the query fails, tell the user: "Database not available. Run `claude mcp add sqlite-simple -- npx @anthropic-ai/sqlite-simple-mcp mydatabase.db` then restart Claude Code." Do not proceed without database access.
+
 1. **Identify the pattern.** The user may provide:
    - A pattern ID directly
    - A description to search for

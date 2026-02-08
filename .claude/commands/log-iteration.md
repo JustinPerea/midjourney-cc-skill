@@ -4,6 +4,8 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
 
 ## Instructions
 
+0. **Verify database access.** Run `SELECT COUNT(*) FROM sessions` via sqlite-simple MCP. If the query fails, tell the user: "Database not available. Run `claude mcp add sqlite-simple -- npx @anthropic-ai/sqlite-simple-mcp mydatabase.db` then restart Claude Code." Do not proceed without database access.
+
 1. **Check for an active session.** Query the database:
    ```sql
    SELECT id, intent, total_iterations FROM sessions WHERE status = 'active' ORDER BY created_at DESC LIMIT 1
@@ -22,7 +24,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
      ```bash
      mkdir -p sessions/{session_id_first_8}/iter-{NN}/
      ```
-   - **Use batch capture** via `browser_run_code` to capture all 4 images in one tool call (see "Batch Image Capture" in automation.md). This saves ~40-50% context compared to individual navigate/screenshot calls:
+   - **Use batch capture** via `browser_run_code` to capture all 4 images in one tool call (see "Batch Image Capture" in `rules/auto-core-workflows.md`). This saves ~40-50% context compared to individual navigate/screenshot calls:
      ```javascript
      browser_run_code({
        code: `async (page) => {
@@ -38,7 +40,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
      })
      ```
    - You already know the exact prompt and parameters (from the session)
-   - Analyze all 4 images in the grid using the **7 standard scoring dimensions** (subject, lighting, color, mood, composition, material, spatial) — see "Assessment Scoring Guide" in skill.md. Score every dimension for every image, even if "not applicable" (score 1.0).
+   - Analyze all 4 images in the grid using the **7 standard scoring dimensions** (subject, lighting, color, mood, composition, material, spatial) — see `rules/core-assessment-scoring.md`. Score every dimension for every image, even if "not applicable" (score 1.0).
      - Flag any dimensions where agent confidence is low (especially spatial_relationships)
      - Identify the best candidate and explain why
      - Note consistency patterns: if all 4 miss the same thing, it's a prompt-level issue; if they diverge, it's MJ interpretation variance
@@ -58,7 +60,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
    **Scenario B: User shares the MJ output image.**
    Analyze the image yourself:
    - Look at the image against the session intent and reference analysis (or reference image if available).
-   - Score all **7 standard dimensions** (subject, lighting, color, mood, composition, material, spatial) on a 0-1 scale with concrete observations for each. See "Assessment Scoring Guide" in skill.md.
+   - Score all **7 standard dimensions** (subject, lighting, color, mood, composition, material, spatial) on a 0-1 scale with concrete observations for each. See `rules/core-assessment-scoring.md`.
    - If it's a 4-image grid, analyze all 4 individually (same as Scenario A analysis).
    - Identify the top 2-3 gaps between intent and output.
    - Formulate the gap analysis: what's missing, what's wrong, what's unexpected, and your hypothesis for why.
@@ -76,7 +78,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
    - What prompt did you use?
    - What parameters? (--ar, --s, --style, --weird, --no, etc.)
    - What MJ version?
-   - How did the result look? (use the assessment scoring guide from skill.md)
+   - How did the result look? (use `rules/core-assessment-scoring.md`)
    - Any specific feedback?
    - What was missing, wrong, or unexpected?
 
@@ -92,13 +94,13 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
 
    **Scores validated:** Set to `1` if the user confirmed or corrected the scores before logging. Set to `0` if agent-only (user didn't review). User-validated scores are higher-quality data for reflection.
 
-   See "Iteration Action Decision Framework" in skill.md for the full decision heuristic and "Assessment Scoring Guide" for the standard 7 dimensions.
+   See `rules/core-iteration-framework.md` for the full decision heuristic and "Assessment Scoring Guide" for the standard 7 dimensions.
 
 5. **If the user says this iteration was successful**, mark it:
    - Set `success = 1` on the iteration
    - Record `what_worked` as a JSON array — be specific about which keywords, parameter choices, or structural decisions contributed
    - Update the session: `status = 'success'`, `final_successful_prompt = <the prompt>`
-   - **Trigger automatic reflection:** Run the lightweight reflection extraction (see "Session Lifecycle & Automatic Reflection" in learning.md), or spawn the reflection subagent for background processing
+   - **Trigger automatic reflection:** Run the lightweight reflection extraction (see "Session Lifecycle & Automatic Reflection" in `rules/learn-reflection.md`), or spawn the reflection subagent for background processing
    - Inform the user: "Session marked as successful. Patterns from this session have been captured."
 
 5.5. **If the user signals abandonment** (e.g., "this isn't working", "let's try something different"):
@@ -111,7 +113,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
    - What was wrong?
    - What was unexpected?
    - What's the hypothesis for fixing it?
-   - **Recommend the next action type** using the Iteration Action Decision Framework from skill.md:
+   - **Recommend the next action type** using the Iteration Action Decision Framework from `rules/core-iteration-framework.md`:
      - Classify the gap type (conceptual miss, single element wrong, right concept wrong execution, etc.)
      - Recommend: Vary Subtle, Vary Strong, prompt edit, or other action
      - If recommending Vary, specify which image number and why
@@ -124,7 +126,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
        WHERE action_type IS NOT NULL
        GROUP BY action_type
        ```
-   - **Record action decision reasoning** in the gap_analysis JSON (see "Extended Gap Analysis JSON Structure" in skill.md):
+   - **Record action decision reasoning** in the gap_analysis JSON (see "Extended Gap Analysis JSON Structure" in `rules/core-iteration-framework.md`):
      ```json
      "action_decision": {
        "chosen": "prompt_edit",
@@ -137,7 +139,7 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
 
 7. **Show the user** a summary of what was logged and the current session state (iteration count, what's been tried so far).
 
-8. **If this is iteration 2+**, populate the `delta` section of gap_analysis (see "Extended Gap Analysis JSON Structure" in skill.md):
+8. **If this is iteration 2+**, populate the `delta` section of gap_analysis (see "Extended Gap Analysis JSON Structure" in `rules/core-iteration-framework.md`):
 
    a. Query the previous iteration:
       ```sql

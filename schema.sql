@@ -62,7 +62,7 @@ CREATE TABLE patterns (
   is_active INTEGER DEFAULT 1,
   notes TEXT,
   auto_extracted INTEGER DEFAULT 0, -- 1 if auto-extracted during reflection
-  is_reviewed INTEGER DEFAULT 0 -- 1 if reviewed (auto-extracted patterns are auto-reviewed)
+  is_reviewed INTEGER DEFAULT 1 -- 1 = active for use. Auto-extracted patterns set this to 1 on insert.
 );
 
 -- Pattern Evidence: Links patterns to supporting/contradicting sessions
@@ -93,6 +93,18 @@ CREATE TABLE keyword_effectiveness (
   last_used_at TEXT
 );
 
+-- View: Pattern summary with evidence counts (used by /show-knowledge)
+CREATE VIEW IF NOT EXISTS v_pattern_summary AS
+SELECT
+  p.*,
+  COALESCE(SUM(CASE WHEN pe.outcome = 'supported' THEN 1 ELSE 0 END), 0) AS evidence_supporting,
+  COALESCE(SUM(CASE WHEN pe.outcome = 'contradicted' THEN 1 ELSE 0 END), 0) AS evidence_contradicting,
+  COALESCE(SUM(CASE WHEN pe.outcome = 'neutral' THEN 1 ELSE 0 END), 0) AS evidence_neutral,
+  COUNT(pe.id) AS evidence_total
+FROM patterns p
+LEFT JOIN pattern_evidence pe ON p.id = pe.pattern_id
+GROUP BY p.id;
+
 -- Session Patterns Applied: Tracks which patterns were used in each session (for validation)
 CREATE TABLE session_patterns_applied (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,3 +113,10 @@ CREATE TABLE session_patterns_applied (
   applied_at TEXT NOT NULL DEFAULT (datetime('now')),
   was_effective INTEGER -- 1 = yes, 0 = no, NULL = unknown
 );
+
+-- Indexes for query performance
+CREATE INDEX IF NOT EXISTS idx_iterations_session ON iterations(session_id);
+CREATE INDEX IF NOT EXISTS idx_patterns_active_conf ON patterns(is_active, confidence);
+CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
+CREATE INDEX IF NOT EXISTS idx_pattern_evidence_pattern ON pattern_evidence(pattern_id);
+CREATE INDEX IF NOT EXISTS idx_session_patterns_session ON session_patterns_applied(session_id);

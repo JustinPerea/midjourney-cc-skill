@@ -4,6 +4,8 @@ Start a new prompt engineering session with full knowledge application.
 
 ## Instructions
 
+0. **Verify database access.** Run `SELECT COUNT(*) FROM sessions` via sqlite-simple MCP. If the query fails, tell the user: "Database not available. Run `claude mcp add sqlite-simple -- npx @anthropic-ai/sqlite-simple-mcp mydatabase.db` then restart Claude Code." Do not proceed without database access.
+
 1. **Gather the user's intent:**
    - What are they trying to create?
    - Do they have a reference image? They can share the image, describe it in text, or both.
@@ -17,7 +19,7 @@ Start a new prompt engineering session with full knowledge application.
    ```
 
    If any unreflected sessions exist:
-   - For each, run the lightweight reflection extraction (see "Session Lifecycle & Automatic Reflection" in learning.md)
+   - For each, run the lightweight reflection extraction (see "Session Lifecycle & Automatic Reflection" in `rules/learn-reflection.md`)
    - Mark each session as `reflected = 1`
    - Briefly inform the user: "Extracted patterns from N previous session(s) before starting."
 
@@ -36,7 +38,7 @@ Start a new prompt engineering session with full knowledge application.
    - Present your analysis to the user. Let them correct, confirm, or add context that the image alone doesn't convey.
 
    **If the user provides a text description:**
-   - Analyze it using the Reference Analysis Template from skill.md. Extract what you can. Ask about genuinely ambiguous aspects only.
+   - Analyze it using the Reference Analysis Template from `rules/core-reference-analysis.md`. Extract what you can. Ask about genuinely ambiguous aspects only.
 
    **If both image and text are provided:**
    - Combine them. The image shows what words may not capture; the description reveals intent the image alone doesn't convey. Note any contradictions between the two and ask the user to clarify.
@@ -214,15 +216,15 @@ Start a new prompt engineering session with full knowledge application.
    - Check authentication state — if not logged in, ask the user to log in manually (cookies persist after first login)
    - Locate the prompt input field using the selector strategy: `data-testid` > ARIA labels > text content > semantic elements > CSS classes
    - Submit the prompt
-   - **Use smart generation polling** via `browser_run_code` (see automation.md "Wait for Generation") to efficiently wait for completion without consuming context on repeated DOM snapshots
-   - **Use batch image capture** via `browser_run_code` (see automation.md "Capture Results") to capture all 4 images in a single tool call, saving ~40-50% context per iteration
-   - Analyze all 4 images against the session intent using the **7 standard scoring dimensions** (subject, lighting, color, mood, composition, material, spatial) — see "Assessment Scoring Guide" in skill.md:
+   - **Use smart generation polling** via `browser_run_code` (see `rules/auto-core-workflows.md` "Wait for Generation") to efficiently wait for completion without consuming context on repeated DOM snapshots
+   - **Use batch image capture** via `browser_run_code` (see `rules/auto-core-workflows.md` "Capture Results") to capture all 4 images in a single tool call, saving ~40-50% context per iteration
+   - Analyze all 4 images against the session intent using the **7 standard scoring dimensions** (subject, lighting, color, mood, composition, material, spatial) — see `rules/core-assessment-scoring.md`:
      - Score every dimension for every image. Flag low-confidence dimensions.
      - Identify the best candidate and explain why
      - Note consistency patterns across all 4 (if all miss the same thing, it's a prompt issue)
      - Note divergences (if only some miss, it's MJ interpretation variance)
    - **Present scores as PRELIMINARY** — ask user to validate before logging, especially low-confidence dimensions
-   - Recommend next action using the Iteration Action Decision Framework: Upscale best, Vary (specify image), or prompt edit
+   - Recommend next action using the Iteration Action Decision Framework (see `rules/core-iteration-framework.md`): Upscale best, Vary (specify image), or prompt edit
    - If the user approves an action, perform it via browser automation
 
    **If no:**
@@ -231,7 +233,7 @@ Start a new prompt engineering session with full knowledge application.
 11. **After generation results** (whether via browser automation or user-shared image):
     - Your visual analysis of the output against the reference/intent produces the richest iteration data
     - Automatically log the iteration using the `/log-iteration` workflow — set `action_type = 'initial'` for the first generation
-    - **Spatial assessment check:** If the reference or intent involves floating, levitation, unusual grounding, or surreal physics, explicitly ask the user to validate your spatial scoring (see "Known Agent Limitations" in skill.md)
-    - Propose next steps based on the gap analysis, using the Iteration Action Decision Framework from skill.md to recommend the appropriate action type (Vary vs. prompt edit)
+    - **Spatial assessment check:** If the reference or intent involves floating, levitation, unusual grounding, or surreal physics, explicitly ask the user to validate your spatial scoring (see "Known Agent Limitations" in `rules/core-assessment-scoring.md`)
+    - Propose next steps based on the gap analysis, using the Iteration Action Decision Framework from `rules/core-iteration-framework.md` to recommend the appropriate action type (Vary vs. prompt edit)
 
 ## User input: $ARGUMENTS

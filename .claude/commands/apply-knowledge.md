@@ -4,6 +4,8 @@ Given a reference description or intent, show which learned patterns would apply
 
 ## Instructions
 
+0. **Verify database access.** Run `SELECT COUNT(*) FROM sessions` via sqlite-simple MCP. If the query fails, tell the user: "Database not available. Run `claude mcp add sqlite-simple -- npx @anthropic-ai/sqlite-simple-mcp mydatabase.db` then restart Claude Code." Do not proceed without database access.
+
 1. **Analyze the user's input** to identify relevant categories. The input could be:
    - A description of what they want ("glowing organic form with dual-tone lighting")
    - A reference to a visual style ("like that glass sculpture look")
