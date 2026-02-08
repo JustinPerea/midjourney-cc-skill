@@ -25,14 +25,21 @@ mydatabase.db     — Session/pattern/keyword data (sqlite)
 - **Deep review**: Use an Explore subagent to read everything in its own context
 
 ## Database State
-- 9 completed sessions, 58 iterations, 68 patterns, 103 tracked keywords
-- Pattern confidence: 4 high, 28 medium, 36 low
-- Sessions span: photographic, abstract graphics, complex artistic styles
+- 11 sessions (9 success, 2 abandoned), 62 iterations, 77 patterns, 103 tracked keywords
+- Pattern confidence: 4 high, 39 medium, 34 low
+- 11 normalized categories (merged from 20 — see learn-pattern-lifecycle.md)
+- Sessions span: photographic, abstract graphics, complex artistic styles, style codes
+
+## Recent Improvements
+- Multi-reference image support (composite analysis from multiple style exemplars)
+- Style code knowledge (`--sref` numeric codes, Style Explorer, blending, `--sref random`)
+- `/discover-styles` command for browsing and cataloging MJ style codes
+- Category normalization (20 → 11 clean categories)
+- Pattern promotion pipeline (4 patterns graduated low → medium based on evidence)
 
 ## Git State
-- 2 commits on main, pushed to remote
-- Uncommitted: restructured from monolithic to modular rules format
-- Untracked: AGENTS.md, rules/, scripts/, metadata.json, reference-images/
+- 5 commits on main, pushed to remote
+- Untracked: reference-images/, sessions/, mydatabase.db
 
 ## Known Issues
 - Context overload when reading full system (~75K+ tokens with startup hooks)
