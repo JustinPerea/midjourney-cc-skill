@@ -93,10 +93,23 @@ CREATE TABLE keyword_effectiveness (
   last_used_at TEXT
 );
 
--- View: Pattern summary with evidence counts (used by /show-knowledge)
+-- View: Pattern summary with evidence counts and health status (used by /show-knowledge)
+-- health_status classifies each pattern for triage:
+--   untested: times_tested=0, no data (not a failure)
+--   anti-pattern: documents a failure mode or pitfall (0% success is expected)
+--   healthy: 70%+ success rate
+--   mixed: 40-70% success, context-dependent
+--   failing: <40% success with real test data (needs investigation)
 CREATE VIEW IF NOT EXISTS v_pattern_summary AS
 SELECT
   p.*,
+  CASE
+    WHEN p.times_tested = 0 THEN 'untested'
+    WHEN p.notes LIKE '%ANTI-PATTERN%' OR p.category = 'failure-mode' THEN 'anti-pattern'
+    WHEN p.success_rate >= 0.7 THEN 'healthy'
+    WHEN p.success_rate >= 0.4 THEN 'mixed'
+    ELSE 'failing'
+  END AS health_status,
   COALESCE(SUM(CASE WHEN pe.outcome = 'supported' THEN 1 ELSE 0 END), 0) AS evidence_supporting,
   COALESCE(SUM(CASE WHEN pe.outcome = 'contradicted' THEN 1 ELSE 0 END), 0) AS evidence_contradicting,
   COALESCE(SUM(CASE WHEN pe.outcome = 'neutral' THEN 1 ELSE 0 END), 0) AS evidence_neutral,
