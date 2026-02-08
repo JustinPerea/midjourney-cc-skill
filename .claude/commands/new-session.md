@@ -54,11 +54,12 @@ Start a new prompt engineering session with full knowledge application.
 4. **Decide how to use the reference image in MJ (if an image was provided).**
    Evaluate and recommend one of these approaches — ask the user which they prefer:
 
-   - **`--sref` (style reference):** Match the aesthetic, color palette, mood, or rendering style — but with a different subject. Best when the user wants "this vibe" applied to something else. **Supports multiple URLs** (space-separated) to blend styles from several references.
+   - **`--sref <image_URL>` (style reference from image):** Match the aesthetic, color palette, mood, or rendering style — but with a different subject. Best when the user wants "this vibe" applied to something else. **Supports multiple URLs** (space-separated) to blend styles from several references.
+   - **`--sref <code>` (style reference from code):** Apply a predefined aesthetic from MJ's style library using a numeric code. Best when the user found a style they like on the Style Explorer (`midjourney.com/explore?tab=styles`), wants a reproducible aesthetic without a reference image, or wants to blend multiple curated styles with weighted ratios (`--sref code1::3 code2::1`). Also supports `--sref random` for discovery. See `rules/core-prompt-construction.md` "Style Codes" section.
    - **`--iref` (image reference):** Use as compositional or structural inspiration. Best when the user wants "something that looks like this."
    - **`--oref` (object reference, V7):** Maintain a consistent character or object across generations. (Replaces `--cref` from V6.)
    - **Prompt-only recreation:** Reverse-engineer the look through keywords alone. Harder, but produces transferable knowledge — the prompt works without the reference. Best for learning what keywords produce specific effects.
-   - **Hybrid:** Use a reference parameter for the hardest-to-describe qualities while prompting explicitly for everything else. Log which aspects came from the reference param vs. the prompt.
+   - **Hybrid:** Use a reference parameter for the hardest-to-describe qualities while prompting explicitly for everything else. Log which aspects came from the reference param vs. the prompt. Can combine image URLs with style codes (e.g., `--sref <image_URL> 1225796221`).
 
    Log the chosen approach in the session data. This distinction matters for pattern extraction during reflection.
 

@@ -60,6 +60,64 @@ Before constructing any prompt, run this mental checklist (queries are in `rules
 
 Present applied patterns in relevance tiers: **strong match**, **likely relevant**, **worth trying**, and **anti-patterns to avoid**. This gives the user clarity about which recommendations are battle-tested for their specific case versus extrapolated from adjacent experience.
 
+## Style Codes (`--sref` Numeric Codes)
+
+MJ maintains an internal style library accessible via numeric codes. These are distinct from `--sref <image_URL>` (which transfers style from a specific image) — numeric codes reference predefined aesthetics curated by MJ and the community.
+
+### Syntax
+
+```
+--sref 2417366470                         # Apply a single style code
+--sref 45668 2987633446                   # Blend two styles (equal weight)
+--sref 404370912::3 3712786097::1         # Weighted blend (3:1 ratio)
+--sref <image_URL> 1225796221             # Combine image reference with style code
+--sref random                             # Apply a random style (reveals the code used)
+```
+
+### Key Parameters
+
+| Parameter | Purpose | Range | Default |
+|-----------|---------|-------|---------|
+| `--sref <code>` | Apply style code(s) | Any numeric code | — |
+| `--sw` | Style weight (how strongly style influences output) | 0–1000 | 100 |
+| `--sv 4` | Use old V7 model for backward compat with pre-V7 style codes | — | current model |
+
+**`--sw` sweet spot:** 65–175 for most uses. Below 100 dilutes the style; above 100 amplifies it. At 200+ structural features from the style also transfer (not just aesthetic).
+
+### Discovery Methods
+
+1. **Style Explorer** — Browse `midjourney.com/explore?tab=styles_top_month` to discover trending community styles. Search by keyword (e.g., "photographic", "anime"). Save favorites for later.
+2. **`--sref random`** — Generates with a random style and reveals the code in the job metadata. Good for serendipitous discovery.
+3. **Style Creator** — MJ's tool for creating your own style codes from images or prompts.
+4. **Community libraries** — Sites like midlibrary.io catalog thousands of codes with visual previews.
+
+### When to Use Style Codes vs Other Approaches
+
+| Scenario | Best Approach |
+|----------|--------------|
+| Want a specific curated aesthetic without a reference image | `--sref <code>` |
+| Want to match an existing image's style | `--sref <image_URL>` |
+| Want to blend multiple aesthetics with control | `--sref code1::weight code2::weight` |
+| Exploring — don't know what style you want | `--sref random` (iterate from discoveries) |
+| Learning what keywords produce specific effects | Prompt-only (no --sref) |
+| Need reproducible style across many prompts | Style codes (more stable than image URLs) |
+
+### V7 Notes
+
+- V7's style reference system was rebuilt — old style codes from V6 may produce different results. Use `--sv 4` to access the old model's interpretation.
+- V7 is "much smarter at understanding the style of an image" and better at isolating style from subject (less "subject leakage").
+- Style codes are reproducible across sessions — same code always produces the same aesthetic. This makes them excellent for iterative refinement: once you find a code that works, it's stable.
+
+### Integration with Iterative Workflow
+
+During a session, style codes can be introduced at any iteration:
+- **Initial exploration:** Start with `--sref random` to discover aesthetics, note codes that work
+- **Refinement:** Lock in a code and iterate on prompt language while keeping the style constant
+- **Blending:** Combine a discovered code with an image reference for hybrid styles
+- **A/B testing:** Compare the same prompt with different style codes to isolate aesthetic effects
+
+Log the style code(s) used in each iteration's parameters field for pattern extraction during reflection.
+
 ## Related Rules
 
 - `core-reference-analysis` — Produces the analysis that feeds prompt construction
