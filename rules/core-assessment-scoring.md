@@ -58,13 +58,15 @@ For each dimension, the agent should self-assess confidence. Flag dimensions whe
 
 When the user shares the MJ output image or images are captured via browser automation (see `rules/auto-core-workflows.md`), perform the assessment yourself:
 
-1. **Load the reference image** (if available) for direct visual comparison:
+1. **Load reference image(s)** (if available) for direct visual comparison:
    ```sql
-   SELECT reference_image_path FROM sessions WHERE id = ?
+   SELECT reference_image_path, reference_analysis FROM sessions WHERE id = ?
    ```
-   - If the path exists and the file is on disk, read it and compare side-by-side with the output.
-   - If not available, fall back to the text-based `reference_analysis` JSON and session intent.
-   - **Flag which method was used** in the assessment — "scored against reference image" vs "scored against text description."
+   - Parse `reference_image_path` as a JSON array. If it's a bare string (legacy), treat it as `["<path>"]`.
+   - Load **all** reference images that exist on disk and compare against the output.
+   - If multiple references exist, score against the **composite `reference_analysis`**: shared defining qualities are scored strictly, variable qualities are scored against session intent (see `rules/core-reference-analysis.md`).
+   - If no reference images are on disk, fall back to the text-based `reference_analysis` JSON and session intent.
+   - **Flag which method was used** — "scored against reference image", "scored against composite reference (N images)", or "scored against text description."
 2. **Look at the output image** against the reference (image or text).
 3. **Score all 7 standard dimensions** based on what you actually see.
 4. **Write concrete observations** for each dimension, not just scores. Example:

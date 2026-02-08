@@ -29,24 +29,32 @@ Start a new prompt engineering session with full knowledge application.
    ```
    If found, ask the user: should these be marked as abandoned (triggers reflection) or are they still in progress?
 
-3. **Analyze the reference — image, text, or both:**
+3. **Analyze the reference — image(s), text, or both:**
 
-   **If the user shares a reference image:**
+   **If the user shares a single reference image:**
    - Look at it and produce the full reference analysis: subject, lighting (type, key light, fill, rim, atmosphere), colors (palette, temperature, saturation), material/texture, composition (framing, subject position, depth, negative space), mood, style, render quality.
    - Think about it from a prompt-engineering perspective: what makes this image look this way, what would be hardest to reproduce in MJ, what could MJ misinterpret, and what keywords map to each visual quality.
    - Map visual qualities to prompt language using the keyword effectiveness database.
    - Present your analysis to the user. Let them correct, confirm, or add context that the image alone doesn't convey.
 
+   **If the user shares multiple reference images:**
+   - Analyze **each image individually** using the full 7-element framework (see `rules/core-reference-analysis.md`).
+   - Then identify **shared vs variable qualities** across all images:
+     - **Shared qualities** (appear in all/most images) define the target aesthetic.
+     - **Variable qualities** (differ across images) are subject-dependent, not style-defining.
+   - Build a **composite `reference_analysis`** JSON with `source_count`, `shared_defining_qualities`, `variable_qualities`, and `per_image_notes` (see the Composite Reference Analysis section in `rules/core-reference-analysis.md`).
+   - Present the composite to the user. Highlight what you classified as shared vs variable and let them correct the classification.
+
    **If the user provides a text description:**
    - Analyze it using the Reference Analysis Template from `rules/core-reference-analysis.md`. Extract what you can. Ask about genuinely ambiguous aspects only.
 
-   **If both image and text are provided:**
-   - Combine them. The image shows what words may not capture; the description reveals intent the image alone doesn't convey. Note any contradictions between the two and ask the user to clarify.
+   **If both image(s) and text are provided:**
+   - Combine them. The images show what words may not capture; the description reveals intent the images alone don't convey. Note any contradictions and ask the user to clarify.
 
 4. **Decide how to use the reference image in MJ (if an image was provided).**
    Evaluate and recommend one of these approaches — ask the user which they prefer:
 
-   - **`--sref` (style reference):** Match the aesthetic, color palette, mood, or rendering style — but with a different subject. Best when the user wants "this vibe" applied to something else.
+   - **`--sref` (style reference):** Match the aesthetic, color palette, mood, or rendering style — but with a different subject. Best when the user wants "this vibe" applied to something else. **Supports multiple URLs** (space-separated) to blend styles from several references.
    - **`--iref` (image reference):** Use as compositional or structural inspiration. Best when the user wants "something that looks like this."
    - **`--oref` (object reference, V7):** Maintain a consistent character or object across generations. (Replaces `--cref` from V6.)
    - **Prompt-only recreation:** Reverse-engineer the look through keywords alone. Harder, but produces transferable knowledge — the prompt works without the reference. Best for learning what keywords produce specific effects.
@@ -156,35 +164,42 @@ Start a new prompt engineering session with full knowledge application.
    VALUES (lower(hex(randomblob(4)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(2)) || '-' || hex(randomblob(6))), ?, ?, ?, 'active')
    ```
 
-6.5. **Create session directory and persist reference image:**
+6.5. **Create session directory and persist reference image(s):**
 
    a. Create the session directory structure:
       ```bash
       mkdir -p sessions/{session_id_first_8_chars}
       ```
 
-   b. **If a reference image was provided**, persist it to the session directory:
+   b. **If reference image(s) were provided**, persist them to the session directory using numbered filenames (`reference-1.png`, `reference-2.png`, etc.):
+
+      For **each** reference image:
       - If the user provided a **stable file path** (e.g., `~/Downloads/ref.png` or `reference-images/radiant.png`), copy it:
         ```bash
-        cp /path/to/user/image.png sessions/{id}/reference.png
+        cp /path/to/user/image.png sessions/{id}/reference-1.png
+        cp /path/to/user/image2.png sessions/{id}/reference-2.png
         ```
       - If the user **pasted/dropped an image into the terminal**, you can see and analyze it — but the source file is a macOS temp path that disappears almost immediately. You **cannot** copy it. Instead:
         1. Analyze the image immediately (you can see it)
-        2. Ask the user to save the image to a stable location: `reference-images/` or directly to `sessions/{id}/reference.png`
+        2. Ask the user to save the image to a stable location: `reference-images/` or directly to `sessions/{id}/reference-N.png`
         3. Once they confirm the path, copy it to the session directory
       - If a **URL** was provided, download it:
         ```bash
-        curl -o sessions/{id}/reference.png <url>
+        curl -o sessions/{id}/reference-1.png <url>
         ```
 
       **Recommended workflow:** Ask users to save reference images to `reference-images/` before starting. This avoids temp-file issues and keeps originals accessible across sessions.
 
-   c. Update the database with the reference path (if saved):
+   c. Update the database with reference path(s) as a **JSON array**:
       ```sql
-      UPDATE sessions SET reference_image_path = 'sessions/{id}/reference.png' WHERE id = ?
+      -- Single image:
+      UPDATE sessions SET reference_image_path = '["sessions/{id}/reference-1.png"]' WHERE id = ?
+
+      -- Multiple images:
+      UPDATE sessions SET reference_image_path = '["sessions/{id}/reference-1.png","sessions/{id}/reference-2.png"]' WHERE id = ?
       ```
 
-   d. If no reference image is available, that's fine — scoring falls back to the
+   d. If no reference images are available, that's fine — scoring falls back to the
       text-based `reference_analysis` field. But note in the session that visual
       comparison is not available.
 

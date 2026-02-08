@@ -49,13 +49,15 @@ Log a Midjourney generation attempt. This captures the prompt, parameters, resul
    - After user confirms/corrects, recommend next action using the Iteration Action Decision Framework: Upscale best, Vary promising (specify which image), or prompt edit
    - If user approves an action, perform it via browser and capture the result
 
-   **For all scenarios:** Before scoring, check if a reference image is available:
+   **For all scenarios:** Before scoring, load reference image(s) for comparison:
    ```sql
-   SELECT reference_image_path FROM sessions WHERE id = ?
+   SELECT reference_image_path, reference_analysis FROM sessions WHERE id = ?
    ```
-   If the path exists and the file is on disk, load it for direct visual comparison.
-   If not available, fall back to text-based comparison using `reference_analysis`.
-   Note in the assessment which comparison method was used.
+   - Parse `reference_image_path` as a JSON array. If it's a bare string (legacy), treat it as `["<path>"]`.
+   - Load **all** reference images that exist on disk for visual comparison.
+   - If multiple references exist, score against the **composite `reference_analysis`** — shared defining qualities are scored strictly, variable qualities are scored against session intent (see `rules/core-reference-analysis.md`).
+   - If no reference images are on disk, fall back to text-based comparison using `reference_analysis`.
+   - Note in the assessment which comparison method was used and how many reference images were loaded (e.g., "scored against composite reference (2 images)").
 
    **Scenario B: User shares the MJ output image.**
    Analyze the image yourself:

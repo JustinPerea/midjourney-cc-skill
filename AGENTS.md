@@ -62,13 +62,15 @@ For each dimension, the agent should self-assess confidence. Flag dimensions whe
 
 When the user shares the MJ output image or images are captured via browser automation (see `rules/auto-core-workflows.md`), perform the assessment yourself:
 
-1. **Load the reference image** (if available) for direct visual comparison:
+1. **Load reference image(s)** (if available) for direct visual comparison:
    ```sql
-   SELECT reference_image_path FROM sessions WHERE id = ?
+   SELECT reference_image_path, reference_analysis FROM sessions WHERE id = ?
    ```
-   - If the path exists and the file is on disk, read it and compare side-by-side with the output.
-   - If not available, fall back to the text-based `reference_analysis` JSON and session intent.
-   - **Flag which method was used** in the assessment — "scored against reference image" vs "scored against text description."
+   - Parse `reference_image_path` as a JSON array. If it's a bare string (legacy), treat it as `["<path>"]`.
+   - Load **all** reference images that exist on disk and compare against the output.
+   - If multiple references exist, score against the **composite `reference_analysis`**: shared defining qualities are scored strictly, variable qualities are scored against session intent (see `rules/core-reference-analysis.md`).
+   - If no reference images are on disk, fall back to the text-based `reference_analysis` JSON and session intent.
+   - **Flag which method was used** — "scored against reference image", "scored against composite reference (N images)", or "scored against text description."
 2. **Look at the output image** against the reference (image or text).
 3. **Score all 7 standard dimensions** based on what you actually see.
 4. **Write concrete observations** for each dimension, not just scores. Example:
@@ -469,10 +471,54 @@ Midjourney's **Describe** tool is invaluable for translation. Upload any referen
 3. Use Describe on successful reference images to discover effective vocabulary
 4. Over time, build a personal translation dictionary from visual observations to MJ-effective vocabulary
 
+## Composite Reference Analysis (Multiple Images)
+
+When the user provides **multiple reference images** as style exemplars (same aesthetic, possibly different subjects), produce a composite analysis that captures what they share.
+
+### Workflow
+
+1. **Analyze each image individually** using the full 7-element framework above. Produce a separate reference analysis JSON for each.
+
+2. **Identify shared vs variable qualities** across all images:
+   - **Shared qualities** appear in all (or most) reference images — these define the target aesthetic.
+   - **Variable qualities** differ across images — these are subject-dependent, not style-defining.
+
+3. **Build a composite `reference_analysis` JSON** that replaces the single-image analysis:
+
+```json
+{
+  "source_count": 3,
+  "shared_defining_qualities": {
+    "lighting": { "type": "soft ambient", "atmosphere": "hazy" },
+    "colors": { "palette": ["teal", "coral", "cream"], "temperature": "warm", "saturation": "muted" },
+    "material": "smooth gradient transitions",
+    "mood": "dreamy, ethereal",
+    "style": "digital illustration with airbrush quality",
+    "render_quality": "soft-focus, painterly"
+  },
+  "variable_qualities": {
+    "subject": "differs across references — one portrait, one landscape, one abstract",
+    "composition": { "framing": "varies", "depth": "consistently shallow" }
+  },
+  "per_image_notes": [
+    "Image 1: Portrait with teal-to-coral gradient, centered subject",
+    "Image 2: Landscape with same palette, wide framing",
+    "Image 3: Abstract forms, same color temperature and soft rendering"
+  ]
+}
+```
+
+4. **Present the composite** to the user. Highlight what you identified as shared vs variable, and let them correct the classification.
+
+### Scoring Implications
+
+- **Shared defining qualities** are scored strictly — the output must match these.
+- **Variable qualities** are scored against the session intent, not the references. The user's stated subject/composition goals take priority over any single reference image.
+
 ## Related Rules
 
 - `core-prompt-construction` — Uses analysis output to build prompts
-- `core-assessment-scoring` — Scores outputs against the reference analysis
+- `core-assessment-scoring` — Scores outputs against the reference analysis (composite when multiple images)
 
 ---
 
@@ -624,7 +670,8 @@ All session images are stored under `sessions/` using the first 8 characters of 
 ```
 sessions/
   {session_id_8char}/
-    reference.png              # Original reference image (if saved)
+    reference-1.png            # First reference image
+    reference-2.png            # Second reference image (if multiple)
     iter-01/
       img-1.png ... img-4.png  # Individual images from the 4-image grid
     iter-02/
@@ -639,13 +686,22 @@ sessions/
 | Session folder | First 8 chars of UUID | `sessions/a1b2c3d4/` |
 | Iteration folder | `iter-{NN}` (zero-padded, matches DB `iteration_number`) | `iter-04/` |
 | Individual images | `img-{N}.png` (1-indexed) | `img-1.png` |
-| Reference image | `reference.png` in session root | `sessions/a1b2c3d4/reference.png` |
+| Reference images | `reference-{N}.png` in session root (1-indexed) | `sessions/a1b2c3d4/reference-1.png` |
 
 ### Reference Image Persistence
 
-The `sessions.reference_image_path` column tracks where the reference is stored. When scoring iterations:
-- If the file exists on disk → load it for direct visual comparison (preferred)
-- If not available → fall back to text-based `reference_analysis` JSON
+The `sessions.reference_image_path` column stores reference image paths as a **JSON array**:
+```json
+["sessions/a1b2c3d4/reference-1.png", "sessions/a1b2c3d4/reference-2.png"]
+```
+
+**Backward compatibility:** Legacy sessions may store a bare string (e.g., `"sessions/a1b2c3d4/reference.png"`). At read time, treat a bare string as a single-element array: `["sessions/a1b2c3d4/reference.png"]`.
+
+When scoring iterations:
+- Parse `reference_image_path` as JSON array (bare string → single-element array)
+- If any files exist on disk → load them all for direct visual comparison (preferred)
+- If none available → fall back to text-based `reference_analysis` JSON
+- For multiple references, the `reference_analysis` contains a composite analysis (see `rules/core-reference-analysis.md`)
 - Flag which method was used in every assessment
 
 ## Related Rules

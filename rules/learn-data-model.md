@@ -93,7 +93,8 @@ All session images are stored under `sessions/` using the first 8 characters of 
 ```
 sessions/
   {session_id_8char}/
-    reference.png              # Original reference image (if saved)
+    reference-1.png            # First reference image
+    reference-2.png            # Second reference image (if multiple)
     iter-01/
       img-1.png ... img-4.png  # Individual images from the 4-image grid
     iter-02/
@@ -108,13 +109,22 @@ sessions/
 | Session folder | First 8 chars of UUID | `sessions/a1b2c3d4/` |
 | Iteration folder | `iter-{NN}` (zero-padded, matches DB `iteration_number`) | `iter-04/` |
 | Individual images | `img-{N}.png` (1-indexed) | `img-1.png` |
-| Reference image | `reference.png` in session root | `sessions/a1b2c3d4/reference.png` |
+| Reference images | `reference-{N}.png` in session root (1-indexed) | `sessions/a1b2c3d4/reference-1.png` |
 
 ### Reference Image Persistence
 
-The `sessions.reference_image_path` column tracks where the reference is stored. When scoring iterations:
-- If the file exists on disk → load it for direct visual comparison (preferred)
-- If not available → fall back to text-based `reference_analysis` JSON
+The `sessions.reference_image_path` column stores reference image paths as a **JSON array**:
+```json
+["sessions/a1b2c3d4/reference-1.png", "sessions/a1b2c3d4/reference-2.png"]
+```
+
+**Backward compatibility:** Legacy sessions may store a bare string (e.g., `"sessions/a1b2c3d4/reference.png"`). At read time, treat a bare string as a single-element array: `["sessions/a1b2c3d4/reference.png"]`.
+
+When scoring iterations:
+- Parse `reference_image_path` as JSON array (bare string → single-element array)
+- If any files exist on disk → load them all for direct visual comparison (preferred)
+- If none available → fall back to text-based `reference_analysis` JSON
+- For multiple references, the `reference_analysis` contains a composite analysis (see `rules/core-reference-analysis.md`)
 - Flag which method was used in every assessment
 
 ## Related Rules

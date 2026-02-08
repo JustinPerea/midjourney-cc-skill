@@ -13,7 +13,7 @@ CREATE TABLE sessions (
   total_iterations INTEGER DEFAULT 0,
   tags TEXT, -- JSON array of tags (e.g., "research-assisted")
   reflected INTEGER DEFAULT 0,
-  reference_image_path TEXT,
+  reference_image_path TEXT, -- JSON array of paths (e.g. '["sessions/ab12/reference-1.png"]'). Legacy: bare string = single image.
   approach_rationale TEXT DEFAULT NULL -- "learning" vs "efficiency" vs "hybrid"
 );
 

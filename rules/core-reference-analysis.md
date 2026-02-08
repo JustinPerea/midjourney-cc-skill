@@ -130,7 +130,51 @@ Midjourney's **Describe** tool is invaluable for translation. Upload any referen
 3. Use Describe on successful reference images to discover effective vocabulary
 4. Over time, build a personal translation dictionary from visual observations to MJ-effective vocabulary
 
+## Composite Reference Analysis (Multiple Images)
+
+When the user provides **multiple reference images** as style exemplars (same aesthetic, possibly different subjects), produce a composite analysis that captures what they share.
+
+### Workflow
+
+1. **Analyze each image individually** using the full 7-element framework above. Produce a separate reference analysis JSON for each.
+
+2. **Identify shared vs variable qualities** across all images:
+   - **Shared qualities** appear in all (or most) reference images — these define the target aesthetic.
+   - **Variable qualities** differ across images — these are subject-dependent, not style-defining.
+
+3. **Build a composite `reference_analysis` JSON** that replaces the single-image analysis:
+
+```json
+{
+  "source_count": 3,
+  "shared_defining_qualities": {
+    "lighting": { "type": "soft ambient", "atmosphere": "hazy" },
+    "colors": { "palette": ["teal", "coral", "cream"], "temperature": "warm", "saturation": "muted" },
+    "material": "smooth gradient transitions",
+    "mood": "dreamy, ethereal",
+    "style": "digital illustration with airbrush quality",
+    "render_quality": "soft-focus, painterly"
+  },
+  "variable_qualities": {
+    "subject": "differs across references — one portrait, one landscape, one abstract",
+    "composition": { "framing": "varies", "depth": "consistently shallow" }
+  },
+  "per_image_notes": [
+    "Image 1: Portrait with teal-to-coral gradient, centered subject",
+    "Image 2: Landscape with same palette, wide framing",
+    "Image 3: Abstract forms, same color temperature and soft rendering"
+  ]
+}
+```
+
+4. **Present the composite** to the user. Highlight what you identified as shared vs variable, and let them correct the classification.
+
+### Scoring Implications
+
+- **Shared defining qualities** are scored strictly — the output must match these.
+- **Variable qualities** are scored against the session intent, not the references. The user's stated subject/composition goals take priority over any single reference image.
+
 ## Related Rules
 
 - `core-prompt-construction` — Uses analysis output to build prompts
-- `core-assessment-scoring` — Scores outputs against the reference analysis
+- `core-assessment-scoring` — Scores outputs against the reference analysis (composite when multiple images)
