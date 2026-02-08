@@ -235,7 +235,7 @@ Transfers visual style from a reference image.
 /imagine a portrait --sref https://url1.jpg::2 https://url2.jpg::1 --sw 250
 ```
 
-**Style Weight (`--sw`):** 0-1000, default 100
+**Style Weight (`--sw`):** 0-1000, default 100. In V7, `--sw` has more impact with sref codes than with images.
 
 | Value | Effect |
 |-------|--------|
@@ -244,14 +244,23 @@ Transfers visual style from a reference image.
 | 200-400 | Strong style transfer |
 | 500-1000 | Dominant style influence |
 
+**Incompatibilities:** `--sw` is not compatible with Moodboards.
+
 **Version:**
 - `--sv 6` (default) - Smarter style understanding
 - `--sv 4` - Required for sref codes created before June 2025
+- **Incompatibility:** `--sv` is not compatible with Moodboards.
+
+**Style Codes:** Use `--sref <numeric_code>` to apply a style from MJ's internal library instead of an image. You cannot create a style code from an uploaded image — codes come from the Style Explorer, Style Creator, or `--sref random`. See `rules/core-prompt-construction.md` for full style code documentation.
 
 **Random styles:**
 ```
 /imagine a forest scene --sref random
 ```
+
+**Behavior notes:**
+- Rerun/reroll and variations preserve the style code from the original prompt
+- `--sref random` with permutations or `--repeat` gives each image a different code
 
 ### Omni Reference (`--oref`) -- REPLACES --cref
 

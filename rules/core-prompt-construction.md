@@ -123,3 +123,13 @@ Log the style code(s) used in each iteration's parameters field for pattern extr
 - `core-reference-analysis` — Produces the analysis that feeds prompt construction
 - `core-research-phase` — Fills knowledge gaps before constructing the prompt
 - `learn-data-model` — Contains the SQL queries for pattern and keyword lookups
+
+## Official Documentation
+
+When uncertain about V7 behavior, check the authoritative source. See `knowledge/official-docs.md` for the full index. Key pages for prompt construction:
+
+- [Style Reference](https://docs.midjourney.com/hc/en-us/articles/32180011136653) — `--sref`, `--sw`, style codes, Style Explorer
+- [Art of Prompting](https://docs.midjourney.com/hc/en-us/articles/32835253061645) — Official prompt technique guide
+- [Prompt Basics](https://docs.midjourney.com/hc/en-us/articles/32023408776205) — Core prompting principles
+- [Raw Mode](https://docs.midjourney.com/hc/en-us/articles/32634113811853) — `--style raw` behavior
+- [Parameter List](https://docs.midjourney.com/hc/en-us/articles/32859204029709) — Complete parameter reference
