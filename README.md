@@ -2,6 +2,8 @@
 
 A Claude Code skill that learns Midjourney prompt engineering through iteration. It captures what works, extracts patterns from successes and failures, and applies accumulated craft knowledge to future prompts.
 
+Compatible with the [Vercel agent-skills](https://github.com/vercel/agent-skills) format — installable via `npx skills add`.
+
 ## How It Works
 
 ```
@@ -20,39 +22,52 @@ Each session feeds the learning loop. The system tracks keyword effectiveness, f
 
 ```
 .
-├── CLAUDE.md                  # Entry point — Claude reads this first to understand the system
-├── skill.md                   # Core prompt engineering: how to analyze references, build
-│                              #   prompts, score outputs, and iterate. Works standalone.
-├── learning.md                # Pattern tracking: how the system remembers what works across
-│                              #   sessions. Database schema, reflection, confidence graduation.
-├── automation.md              # Browser automation: how to control midjourney.com directly —
-│                              #   submit prompts, poll for results, capture images, run actions.
-├── schema.sql                 # Database setup script — run this once to create the 6 tables
-│                              #   that store sessions, iterations, patterns, and keyword data.
+├── SKILL.md                     # Vercel agent-skills entry point — skill definition,
+│                                #   architecture, rule index, workflow overview
+├── CLAUDE.md                    # Claude Code router — points to SKILL.md and rules/
+├── AGENTS.md                    # Compiled full reference (auto-generated from rules/)
+├── metadata.json                # Skill metadata (version, author, references)
+├── schema.sql                   # Database setup script — creates the 6 tables for
+│                                #   sessions, iterations, patterns, and keyword data
+├── rules/
+│   ├── _sections.md             # Section definitions (core, learn, auto)
+│   ├── _template.md             # Template for creating new rules
+│   ├── core-reference-analysis.md   # 7-element visual framework, vocabulary translation
+│   ├── core-prompt-construction.md  # V7 prompt structure, knowledge application check
+│   ├── core-research-phase.md       # Coverage assessment, community research workflow
+│   ├── core-assessment-scoring.md   # 7-dimension scoring guide, agent limitations
+│   ├── core-iteration-framework.md  # Gap analysis, action decisions, aspect-first approach
+│   ├── learn-data-model.md          # Database schema, session structure, ID generation
+│   ├── learn-pattern-lifecycle.md   # Confidence graduation, decay, knowledge generation
+│   ├── learn-reflection.md          # Session lifecycle, automatic reflection, subagent
+│   ├── auto-core-workflows.md       # Browser automation sequences for midjourney.com
+│   └── auto-reference-patterns.md   # Selector strategy, error handling, image analysis
 ├── knowledge/
-│   ├── v7-parameters.md       # Complete Midjourney V7 parameter reference (static)
-│   ├── translation-tables.md  # Visual quality → prompt keyword mappings (static)
-│   ├── prompt-templates/      # Ready-to-use prompt templates by category (static)
-│   ├── failure-modes.md       # Diagnostic framework + session-learned failures (mixed)
-│   ├── learned-patterns.md    # Auto-generated pattern summaries (populated through use)
-│   └── keyword-effectiveness.md  # Auto-generated keyword ratings (populated through use)
-├── .claude/commands/          # Slash command definitions (/new-session, /reflect, etc.)
+│   ├── v7-parameters.md         # Complete Midjourney V7 parameter reference (static)
+│   ├── translation-tables.md    # Visual quality → prompt keyword mappings (static)
+│   ├── prompt-templates/        # Ready-to-use prompt templates by category (static)
+│   ├── failure-modes.md         # Diagnostic framework + session-learned failures (mixed)
+│   ├── learned-patterns.md      # Auto-generated pattern summaries (populated through use)
+│   └── keyword-effectiveness.md # Auto-generated keyword ratings (populated through use)
+├── scripts/
+│   └── build.sh                 # Compiles rules/ → AGENTS.md
+├── .claude/commands/            # Slash command definitions (/new-session, /reflect, etc.)
 └── LICENSE
 ```
 
-The three core modules can be adopted independently:
+## Rule Categories
 
-| Module | What it does | Requires |
-|--------|-------------|----------|
-| **`skill.md`** | Reference analysis, prompt construction, 7-dimension scoring, iteration strategy | Nothing — works standalone |
-| **`learning.md`** | Pattern extraction, keyword tracking, confidence graduation, knowledge base generation | sqlite MCP server |
-| **`automation.md`** | Submit prompts, poll for generation, capture 4-image grids, run upscale/vary actions | playwright MCP server |
+| Section | Impact | Prefix | Rules | Dependencies |
+|---------|--------|--------|-------|-------------|
+| **Core Prompt Engineering** | CRITICAL | `core-` | 5 | None — works standalone |
+| **Learning & Reflection** | HIGH | `learn-` | 3 | sqlite MCP server |
+| **Browser Automation** | MEDIUM | `auto-` | 2 | playwright MCP server |
 
 ## Quick Start
 
 ### Level 1: Core Only (no setup)
 
-Just read `skill.md`. It contains everything you need to construct effective Midjourney V7 prompts:
+Read `SKILL.md` and the `core-*` rules. Everything you need to construct effective Midjourney V7 prompts:
 - Reference analysis framework (7 formal art elements)
 - Vocabulary translation layer (visual analysis → MJ keywords)
 - Prompt structure best practices
@@ -131,6 +146,16 @@ The top half of `failure-modes.md` is a static diagnostic framework — decision
 5. **Iterate**: System recommends Vary Subtle/Strong vs. prompt edit based on gap analysis
 6. **Reflect**: Session close auto-extracts patterns; `/reflect` does deeper cross-session analysis
 7. **Accumulate**: Patterns graduate from low → medium → high confidence with evidence
+
+## Building AGENTS.md
+
+The compiled reference is auto-generated from rule files:
+
+```bash
+./scripts/build.sh
+```
+
+This strips YAML frontmatter from each rule file and concatenates them under section headers.
 
 ## License
 

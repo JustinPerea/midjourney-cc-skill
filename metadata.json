@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "organization": "JustinPerea",
+  "date": "February 2026",
+  "abstract": "Learning system for Midjourney V7 prompt engineering. 10 rules across 3 categories.",
+  "references": ["https://docs.midjourney.com"]
+}
