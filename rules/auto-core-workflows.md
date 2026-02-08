@@ -24,6 +24,25 @@ browser_navigate({ url: "https://www.midjourney.com/imagine" })
 browser_snapshot()  -- verify we're on the imagine page
 ```
 
+**1.5. Disable Personalization**
+
+V7 has personalization ON by default, which silently biases all generations toward the user's aesthetic profile. For reproducible prompt engineering, disable it before submitting prompts.
+
+```
+-- After navigating to the imagine page, take a snapshot
+browser_snapshot()
+-- Look for the personalization toggle near the Imagine bar
+-- It may appear as a toggle button, a "--p" indicator, or a profile icon
+-- If personalization is active/enabled, click to toggle it OFF
+browser_click({ ref: [personalization_toggle_ref], element: "Personalization toggle" })
+-- Verify it's now off
+browser_snapshot()
+```
+
+**Why this matters:** Patterns extracted with personalization on reflect a blend of prompt + user aesthetic. Disabling it isolates prompt effects, making patterns more universal and reproducible. The toggle persists across the session, so this only needs to be done once per browser session.
+
+**Exception:** If the user explicitly wants personalization on (e.g., testing their profile's effect), skip this step and log `personalization=on` in the session's `approach_rationale`.
+
 **2. Submit a Prompt**
 ```
 -- Take snapshot to find the prompt input

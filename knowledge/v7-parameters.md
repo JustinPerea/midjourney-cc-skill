@@ -617,36 +617,32 @@ Allows changing the prompt while making variations. Use when you want to vary AN
 
 ## Personalization (`--p`)
 
-Personalization acts as a style assistant, applying your aesthetic preferences automatically to generations.
+Personalization applies the user's aesthetic preferences to generations. It learns from pair ranking votes and liked images on the Explore page.
 
-### Unlocking Personalization
+### Critical: ON by Default in V7
 
-1. Visit the Personalize Page on midjourney.com
-2. Rank at least 200 image pairs (or like enough images from Explore page)
-3. Once unlocked, you can use `--p` in your prompts
+**V7 is the first model with personalization enabled by default.** Users must unlock it (~5 minutes of ranking) before using V7, and it remains active unless explicitly toggled off. This means every V7 generation is influenced by the user's personal aesthetic profile.
 
-### Using Personalization
+**Impact on pattern learning:** When personalization is on, MJ's output reflects a blend of prompt + user aesthetic. Patterns extracted from these sessions are partially user-specific, not purely universal MJ behavior. For reproducible prompt engineering, **disable personalization** to isolate prompt effects from profile effects.
 
-**Basic:** Add `--p` to apply your Global Profile
-```
-a mountain landscape --p
-```
+### Toggling On/Off
 
-**Specific profile:** Use profile code
-```
-a mountain landscape --p xjspemh
-```
+- **On the website:** Click the personalization toggle button near the Imagine bar
+- **Per-prompt:** Add `--p` to force it on, or omit it (but the global toggle still applies)
+- **Profile code:** `--p xjspemh` applies a specific profile instead of the default
 
 ### Profiles
 
 - Create multiple profiles with different styles (V7 Profiles and V6 Profiles are separate)
 - Each profile generates a unique ID/code
+- Stack multiple profiles: `--p 6odeoas 7enzken`
 - Set one as your default
 - Can also create **Moodboards** — curated image collections that define a specific style
+- **Note:** Personalization is "constantly in flux" — it changes subtly as you do more rankings, and the algorithm itself may update
 
 ### Stylize + Personalization
 
-When using `--p`, the `--s` (stylize) parameter controls how much personalization is applied:
+The `--s` (stylize) parameter controls how much personalization is applied:
 - Lower stylize = Less personalization effect
 - Higher stylize = More personalization effect
 

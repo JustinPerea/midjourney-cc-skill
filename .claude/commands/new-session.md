@@ -230,6 +230,7 @@ Start a new prompt engineering session with full knowledge application.
    **If yes:**
    - Navigate to midjourney.com (check if already there)
    - Check authentication state — if not logged in, ask the user to log in manually (cookies persist after first login)
+   - **Disable personalization** — V7 has personalization ON by default. Check the toggle near the Imagine bar and turn it OFF for reproducible results (see `rules/auto-core-workflows.md` step 1.5). If the user explicitly wants personalization on, skip this and log `personalization=on` in `approach_rationale`.
    - Locate the prompt input field using the selector strategy: `data-testid` > ARIA labels > text content > semantic elements > CSS classes
    - Submit the prompt
    - **Use smart generation polling** via `browser_run_code` (see `rules/auto-core-workflows.md` "Wait for Generation") to efficiently wait for completion without consuming context on repeated DOM snapshots
