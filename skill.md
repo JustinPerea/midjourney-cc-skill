@@ -1,48 +1,42 @@
 ---
-name: midjourney-cc-skill
-description: >
-  Midjourney V7 prompt engineering with iterative learning.
-  Analyzes references, constructs prompts, scores outputs on 7 dimensions,
-  extracts patterns from iterations, and accumulates craft knowledge.
-  Use for Midjourney prompt construction, evaluation, or iteration.
-license: MIT
-metadata:
-  author: JustinPerea
-  version: "1.0.0"
+name: midjourney-prompt-engineering
+description: Use when generating images with Midjourney, constructing MJ prompts, iterating on MJ output quality, choosing between --sref/--oref/style codes, scoring image results, or building reusable prompt patterns. Also use when exploring MJ style codes, animating images, or debugging why a prompt isn't producing the intended result.
 ---
 
 # Midjourney Prompt Learning System
 
-A learning system for Midjourney prompt engineering. It captures what works through iteration, extracts patterns from successes and failures, and applies accumulated craft knowledge to future prompts.
+A skill that knows Midjourney. The foundation is a structured understanding of Midjourney V7 built from the [official documentation](https://docs.midjourney.com) — every parameter, prompt syntax rule, reference system, and style code mechanic. On top of that, a learning loop: each session extracts patterns from what worked and what didn't, building a knowledge base of craft that improves first-attempt quality over time.
 
-## Architecture Philosophy
+## Architecture
 
-This system is designed around a key insight: **you are a multimodal reasoning model**. You don't need complex automated pipelines — you ARE the visual critic, gap analyzer, prompt rewriter, and context manager.
-
-- **You are the VLM critic.** Analyze Midjourney output images directly against the intent/reference and score each dimension. Confirm your assessment with the user.
-- **You are the gap analyzer.** Compare output to intent visually and reason about what went wrong.
-- **You are the prompt rewriter.** You understand language, visual aesthetics, and MJ's behavior.
-- **You handle history natively.** Within a session, you have full conversation context.
+**You are a multimodal reasoning model.** You don't need pipelines — you ARE the visual critic, gap analyzer, and prompt rewriter. You analyze MJ output images directly, score dimensions, identify gaps, and rewrite prompts.
 
 **The one thing you can't do natively is remember across sessions.** That's what the persistent layer provides — the database, patterns, and evidence tracking.
 
+## Knowledge Foundation (ships with the skill)
+
+| File | What It Contains | Source |
+|------|-----------------|--------|
+| `knowledge/v7-parameters.md` | Every V7 parameter, prompt structure rules, breaking changes from V6 | [Official docs](https://docs.midjourney.com) |
+| `knowledge/translation-tables.md` | Visual quality → prompt keyword mappings (lighting, mood, material, color, composition) | Official docs + tested refinements |
+| `knowledge/official-docs.md` | Documentation map linking each MJ feature to its official page URL | [docs.midjourney.com](https://docs.midjourney.com) |
+| `knowledge/failure-modes.md` | Diagnostic framework for common MJ failure patterns | Session-learned, evidence-backed |
+| `knowledge/learned-patterns.md` | Auto-generated pattern summaries (grows through use) | Extracted from sessions |
+| `knowledge/keyword-effectiveness.md` | Keyword effectiveness rankings (grows through use) | Extracted from sessions |
+
+The static files (`v7-parameters`, `translation-tables`, `official-docs`) are the skill's baseline knowledge — what a skilled MJ user would know from reading the documentation carefully. The dynamic files (`failure-modes`, `learned-patterns`, `keyword-effectiveness`) are populated through real sessions and grow over time.
+
 ## Module Dependencies
 
-| Module | Purpose | Required MCP Servers |
-|--------|---------|---------------------|
-| Core rules (`core-*`) | Prompt construction, reference analysis, scoring, iteration strategy | None |
-| Learning rules (`learn-*`) | Pattern lifecycle, reflection, keyword tracking, knowledge generation | sqlite-simple |
+| Module | Purpose | Required MCP |
+|--------|---------|-------------|
+| Core rules (`core-*`) | Reference analysis, prompt construction, scoring, iteration | None |
+| Learning rules (`learn-*`) | Pattern lifecycle, reflection, keyword tracking | sqlite-simple |
 | Automation rules (`auto-*`) | Browser automation for midjourney.com | playwright |
 
-### Getting Started
-
-**Core only** (manual workflow): Load the `core-*` rules. Copy prompts to Midjourney manually.
-
-**Core + Learning** (pattern accumulation): Load `core-*` + `learn-*` rules. Set up sqlite MCP and initialize from `schema.sql`.
-
-**Full system** (automated): Load all rules. Add playwright MCP for browser control.
-
-### MCP Server Setup
+**Core only** (manual): Load `core-*` rules. Copy prompts to MJ manually.
+**Core + Learning**: Add `learn-*` rules + sqlite MCP. Patterns persist across sessions.
+**Full system**: Add `auto-*` rules + playwright MCP. Hands-free iteration.
 
 ```bash
 # SQLite (for learning rules)
@@ -55,80 +49,43 @@ claude mcp add playwright -- npx @playwright/mcp@latest --headed
 sqlite3 mydatabase.db < schema.sql
 ```
 
-## Rule Categories
-
-| Section | Impact | Prefix | Rules | Description |
-|---------|--------|--------|-------|-------------|
-| Core Prompt Engineering | CRITICAL | `core-` | 5 | Reference analysis, prompt construction, research, scoring, iteration |
-| Learning & Reflection | HIGH | `learn-` | 3 | Data model, pattern lifecycle, reflection workflows |
-| Browser Automation | MEDIUM | `auto-` | 2 | Playwright workflows, selectors, error handling |
-
 ## Rules Quick Reference
 
-### Core Prompt Engineering (no dependencies)
+| Rule | What It Covers |
+|------|---------------|
+| `core-reference-analysis` | 7-element visual framework, vocabulary translation |
+| `core-prompt-construction` | V7 prompt structure, keyword practices, knowledge application |
+| `core-research-phase` | Coverage assessment, community research workflow |
+| `core-assessment-scoring` | 7-dimension scoring, confidence flags, agent limitations |
+| `core-iteration-framework` | Gap analysis, action decisions, aspect-first approach |
+| `learn-data-model` | Database schema, session structure, ID generation |
+| `learn-pattern-lifecycle` | Confidence graduation, decay, knowledge generation |
+| `learn-reflection` | Session lifecycle, automatic reflection, contrastive analysis |
+| `auto-core-workflows` | Prompt submission, smart polling, batch capture, animation |
+| `auto-reference-patterns` | Selector strategy, error handling, image analysis |
 
-- **`core-reference-analysis`** — 7-element visual framework, vocabulary translation, reference analysis template
-- **`core-prompt-construction`** — V7 prompt structure, keyword best practices, knowledge application check
-- **`core-research-phase`** — Coverage assessment, community research workflow, presentation rules
-- **`core-assessment-scoring`** — 7-dimension scoring guide, confidence flags, agent limitations
-- **`core-iteration-framework`** — Gap analysis, action decision framework, aspect-first approach
+## Scoring
 
-### Learning & Reflection (requires sqlite MCP)
-
-- **`learn-data-model`** — Database schema, session structure, directory conventions, ID generation
-- **`learn-pattern-lifecycle`** — Confidence graduation, decay, scope rules, knowledge base generation
-- **`learn-reflection`** — Session lifecycle, automatic reflection, contrastive analysis, reflection subagent
-
-### Browser Automation (requires playwright MCP)
-
-- **`auto-core-workflows`** — Authentication, prompt submission, smart polling, batch capture, actions
-- **`auto-reference-patterns`** — Selector strategy, error handling, timing, grid analysis, image analysis
-
-## Scoring System
-
-All iterations are scored on **7 standard dimensions**: subject, lighting, color, mood, composition, material, spatial_relationships. All 7 are always scored (use 1.0 for "not applicable") to ensure cross-iteration comparability. Scores are presented as preliminary and validated with the user before logging. See `rules/core-assessment-scoring.md`.
+All iterations scored on **7 dimensions**: subject, lighting, color, mood, composition, material, spatial. All 7 always scored (1.0 for "not applicable"). Scores are preliminary until user-validated. See `rules/core-assessment-scoring.md`.
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/new-session` | Start a new prompt engineering session with full knowledge application |
-| `/research [focus]` | Research community techniques for a specific MJ challenge |
-| `/log-iteration` | Log a generation attempt with assessment and feedback |
-| `/reflect` | Deep analysis: cross-session patterns, contrastive refinement, contradiction resolution |
-| `/show-knowledge [category]` | Display learned patterns, optionally filtered by category |
-| `/apply-knowledge <description>` | Show which patterns apply to a given intent and construct a prompt |
-| `/validate-pattern [id]` | Mark a pattern as validated or contradicted |
-| `/forget-pattern [id]` | Deactivate a pattern that's no longer valid |
-
-## Knowledge Files
-
-Files in `knowledge/` provide reference material and accumulated learning:
-
-- `v7-parameters.md` — Complete MJ V7 parameter reference
-- `translation-tables.md` — Visual quality to prompt keyword mappings
-- `failure-modes.md` — Diagnostic framework and session-learned failure modes
-- `learned-patterns.md` — Auto-generated pattern summaries (populated through use)
-- `keyword-effectiveness.md` — Auto-generated keyword ratings (populated through use)
-- `prompt-templates/` — Ready-to-use prompt templates by category
+| `/new-session` | Start a session with full knowledge application |
+| `/log-iteration` | Log a generation attempt with scoring and gap analysis |
+| `/reflect` | Cross-session pattern analysis and knowledge extraction |
+| `/research [focus]` | Research community techniques for a challenge |
+| `/show-knowledge [category]` | Display learned patterns |
+| `/apply-knowledge <desc>` | Pattern-informed prompt for a description |
+| `/discover-styles` | Browse and catalog MJ style codes |
+| `/validate-pattern [id]` | Mark pattern as validated or contradicted |
+| `/forget-pattern [id]` | Deactivate a pattern |
 
 ## Key Principle
 
 Every pattern must have logged evidence. The system learns from real iteration data, not assumptions. Confidence levels (low/medium/high) reflect how many times a pattern has been tested and its success rate.
 
-## Workflow
+## Full Reference
 
-1. User starts with `/new-session` describing what they want
-2. System queries knowledge base and assesses coverage
-3. If coverage is low, system automatically researches community techniques
-4. System constructs an informed prompt combining internal knowledge and research
-5. Submit to Midjourney — via browser automation or user pastes manually
-6. Capture and analyze results
-7. Use `/log-iteration` to record what happened
-8. Iterate — system recommends next action using the Action Decision Framework
-9. Session close triggers automatic reflection to extract patterns
-10. Knowledge compounds over time, improving first-attempt success rates
-
-## Full Compiled Reference
-
-For the complete unabridged reference combining all rules, see `AGENTS.md`.
+For the complete compiled reference combining all rules, see `AGENTS.md`.
