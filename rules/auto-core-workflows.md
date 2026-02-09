@@ -253,6 +253,69 @@ Then use the standard polling (step 3) and capture (step 4) sequences. The new j
 - Consider removing `--sref` or `--raw` from the edit prompt if those parameters caused the regional issue being fixed.
 - Editor edits produce 4-image batches like normal generations — capture and score all 4.
 
+**7. Animate Image (Loop / Auto)**
+
+MJ can animate any generated image into a 5-second video clip. Two modes:
+- **Auto** — one-directional motion (Low/High Motion)
+- **Loop** — start and end frames match for seamless looping (Low/High Motion)
+
+Each mode has Low Motion (subtle, form-preserving) and High Motion (dramatic, transformative).
+
+```
+-- Navigate to the image detail page
+browser_navigate({ url: "https://www.midjourney.com/jobs/[JOB_ID]?index=[IMAGE_INDEX]" })
+browser_snapshot()
+-- Find animation buttons: "Loop Low Motion", "Loop High Motion", "Auto Low Motion", "Auto High Motion"
+-- Click the desired animation button using its ref
+browser_click({ ref: [animation_button_ref], element: "Loop Low Motion" })
+```
+
+**Wait for Video Completion:**
+
+Animation takes longer than image generation (~45-120s). After clicking the animation button, a new job is created. Navigate to the new job page to poll for completion:
+
+```javascript
+browser_run_code({
+  code: `async (page) => {
+    // Navigate to the animation job page
+    await page.goto('https://www.midjourney.com/jobs/[ANIMATION_JOB_ID]?index=0');
+    await page.waitForTimeout(10000);
+
+    // Poll for video element
+    for (let i = 0; i < 40; i++) {
+      await page.waitForTimeout(5000);
+      const elapsed = 10 + ((i + 1) * 5);
+
+      const video = await page.$('video');
+      if (video) {
+        const src = await page.evaluate(() => {
+          const v = document.querySelector('video source, video');
+          return v?.src || v?.querySelector('source')?.src || 'video found, no src';
+        });
+        return 'DONE: Video loaded (' + elapsed + 's). URL: ' + src;
+      }
+    }
+    return 'TIMEOUT 210s — no video element found';
+  }`
+})
+```
+
+**Capture video screenshot:**
+```
+browser_take_screenshot({ type: "png", filename: "sessions/[ID]/iter-[NN]/loop-low-motion.png" })
+```
+
+**Key findings from testing:**
+- Animation generates **4 video variations** (index 0-3), just like image generation
+- Videos are at `cdn.midjourney.com/video/{job-id}/{index}.mp4` (5.04s each)
+- Cost is ~8x a regular image generation
+- **Low Motion** preserves form identity — ideal for loops with geometric/symmetric subjects
+- **High Motion** dramatically deforms the source — use for cinematic one-shots, not loops
+- Best animation source images: radial symmetry, clean black backgrounds, internal glow, centered composition
+
+**Ideal animation source prompt pattern:**
+Heavy `--no` list to eliminate background detail, `--style raw` for clean rendering, `--ar 1:1` for symmetric output, luminous/glowing subjects on "pure black void."
+
 ## Related Rules
 
 - `auto-reference-patterns` — Selector strategy and error handling for these workflows

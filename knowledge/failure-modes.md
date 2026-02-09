@@ -2,7 +2,7 @@
 
 > Common problems encountered in Midjourney generation and their fixes.
 > Auto-generated from iteration logs and patterns database during reflection.
-> Last updated: 2026-02-08
+> Last updated: 2026-02-09
 
 ## How to Use This File
 
@@ -12,6 +12,7 @@ that match the symptoms. Each entry includes:
 - **Cause**: Why it happens
 - **Fix**: What to change in the prompt/parameters
 - **Evidence**: Which sessions demonstrated this
+- **Confidence**: How well-tested the pattern is
 
 ---
 
@@ -150,7 +151,27 @@ Better to:
 
 ## Session-Learned Failure Modes
 
-### Keyword Triggers (Rendering Behavior)
+Failure modes are organized by confidence level: **Medium** (tested 2+ times with logged evidence) down to **Low** (single observation, needs validation).
+
+### MEDIUM CONFIDENCE (Well-Tested Patterns)
+
+#### Subject Keywords Override Abstract/Blur Effects
+**Pattern ID:** `auto-icm-subject-keyword-dominance`
+**Confidence:** Medium (0% success, 3 tests)
+
+**Symptom:** Any concrete subject keyword — even softened with "hint of", "faint", "dissolving" — produces sharp rendering instead of blur/abstract/defocus effects.
+
+**Cause:** V7 prompt hierarchy: subject/material > style/abstract > perceptual quality. Subject nouns re-anchor output in conventional sharp rendering, overriding blur keywords.
+
+**Fix:**
+- Do NOT attempt to soften subject keywords with qualifiers
+- Complete subject removal is the only reliable approach
+- Even "hint of dissolving botanical silhouettes" produced identifiable sharp stems and leaves (iter 7: blur scores dropped from 0.90-0.95 to 0.45-0.55)
+- If organic forms needed, achieve them through Vary Strong on an abstract parent, not prompt keywords
+
+**Evidence:** Strong failure mode from ICM session 365b2d9b. Iter 5: "dissolving flower petals" → 3/4 sharp (0.73 avg, blur 0.45-0.80). Iter 7: "hint of dissolving botanical silhouettes" → all 4 sharp (0.74 avg, blur 0.45-0.55). Iter 1: "motion-blurred flowers" → 0/4 blurred (0.64 avg). Cross-session confirmed in 6 sessions (365b2d9b, 39ce7668, 5ebbd0ef, 799400c2, 822750f3, bf0036e5).
+
+---
 
 #### Warm Fabric-Associated Color Names → Silk/Satin Rendering
 **Pattern ID:** `auto-warm-color-triggers-fabric`
@@ -171,23 +192,23 @@ Better to:
 
 ---
 
-#### Subject Keywords Override Abstract/Blur Effects
-**Pattern ID:** `auto-icm-subject-keyword-dominance`
-**Confidence:** Medium (0% success, 3 tests)
+#### Gallery Framing Trap (Art Movement + Gallery Context)
+**Pattern ID:** `pat-gallery-framing-trap`
+**Confidence:** Medium (0% success, 2 tests)
 
-**Symptom:** Any concrete subject keyword — even softened with "hint of", "faint", "dissolving" — produces sharp rendering instead of blur/abstract/defocus effects.
+**Symptom:** MJ renders a photo of artwork on a gallery wall rather than generating the artwork itself.
 
-**Cause:** V7 prompt hierarchy: subject/material > style/abstract > perceptual quality. Subject nouns re-anchor output in conventional sharp rendering, overriding blur keywords.
+**Cause:** Combining art movement names (color field painting) with gallery/exhibition context (gallery artwork) triggers meta-rendering.
 
 **Fix:**
-- Do NOT attempt to soften subject keywords with qualifiers
-- Complete subject removal is the only reliable approach
-- Even "hint of dissolving botanical silhouettes" produced identifiable sharp stems and leaves (iter 7: blur scores dropped from 0.90-0.95 to 0.45-0.55)
-- If organic forms needed, achieve them through Vary Strong on an abstract parent, not prompt keywords
+- Use artist inspiration (e.g., "James Turrell inspired") without gallery context words
+- OR use mood/quality words (contemplative, hypnotic luminosity) instead of art movement labels
 
-**Evidence:** Strong failure mode from ICM session 365b2d9b. Iter 5: "dissolving flower petals" → 3/4 sharp (0.73 avg, blur 0.45-0.80). Iter 7: "hint of dissolving botanical silhouettes" → all 4 sharp (0.74 avg, blur 0.45-0.55). Iter 1: "motion-blurred flowers" → 0/4 blurred (0.64 avg). Cross-session confirmed in 6 sessions (365b2d9b, 39ce7668, 5ebbd0ef, 799400c2, 822750f3, bf0036e5).
+**Evidence:** Discovered in iteration 3B. "Gallery artwork" triggered meta-rendering of painting in exhibition space.
 
 ---
+
+### LOW CONFIDENCE (Single/Limited Tests, Needs Validation)
 
 #### "Color Swatch" / "Wash" / "Matte Finish" → Painted Swatches
 **Pattern ID:** `auto-color-swatch-triggers-paint`
@@ -299,8 +320,6 @@ Better to:
 
 ---
 
-### Rendering Defaults & Material Issues
-
 #### Generic 2D/3D Material Contrast Description Fails
 **Pattern ID:** `material-contrast-needs-physical-desc`
 **Confidence:** Low (0% success, 1 test)
@@ -313,22 +332,6 @@ Better to:
 - Describe material contrast physically using opposing material adjectives for each part
 - Example: "flat matte black" for void face vs "glossy luminous rainbow" for body
 - Name materials explicitly as different substances rather than relying on edge/outline separation
-
----
-
-#### Gallery Framing Trap (Art Movement + Gallery Context)
-**Pattern ID:** `pat-gallery-framing-trap`
-**Confidence:** Medium (0% success, 2 tests)
-
-**Symptom:** MJ renders a photo of artwork on a gallery wall rather than generating the artwork itself.
-
-**Cause:** Combining art movement names (color field painting) with gallery/exhibition context (gallery artwork) triggers meta-rendering.
-
-**Fix:**
-- Use artist inspiration (e.g., "James Turrell inspired") without gallery context words
-- OR use mood/quality words (contemplative, hypnotic luminosity) instead of art movement labels
-
-**Evidence:** Discovered in iteration 3B. "Gallery artwork" triggered meta-rendering of painting in exhibition space.
 
 ---
 
@@ -347,8 +350,6 @@ Better to:
 
 ---
 
-### Workflow & Strategy Pitfalls
-
 #### MJ UI Style Reference Panel Auto-Selection
 **Pattern ID:** `auto-icm-sref-ui-unreliable`
 **Confidence:** Low (0% success, 1 test)
@@ -366,153 +367,54 @@ Better to:
 
 ---
 
-#### Vary Subtle Cannot Fix Prompt-Level Issues
-**Pattern ID:** `auto-vary-subtle-cant-fix-prompt` (ANTI-PATTERN)
-**Confidence:** Low
+#### Editor Inpainting Introduces Unwanted Environmental Elements
+**Pattern ID:** `ed01`
+**Confidence:** Low (0% success, 1 test)
 
-**Symptom:** Vary Subtle preserves overall quality but wrong element position or missing features persist.
+**Symptom:** MJ editor inpainting regenerates backgrounds with walls, corners, surfaces even when prompt specifies flat/seamless backdrop.
 
-**Cause:** Vary Subtle modifies rendering details, not semantic content from prompt.
+**Cause:** The preserved figure implies a physical space that MJ fills with environmental context.
 
 **Fix:**
-- Use Vary Subtle only for polish/refinement when parent image is already close to target
-- For prompt-level issues (wrong position, missing element, incorrect spatial relationships), edit the prompt instead
+- Editor inpainting is not suitable for creating flat seamless backgrounds
+- Use prompt-only approaches for flat backdrops instead
 
-**Evidence:** Session 0ff95168 iter 4. Vary Subtle on iter 3 img 2 maintained 0.88 avg but doorway position remained wrong (LEFT instead of CENTER-RIGHT) because the prompt specified left side.
+**Evidence:** Session 17bbeab3 iter 15. Smart Select segmentation worked but regenerated area had walls and tonal gradients instead of flat gray.
 
 ---
 
-#### Adding Keywords to Fix One Element May Break Others
-**Pattern ID:** `8c8ee1ec-64e2-4d41-0449-8791d9f2223a` (ANTI-PATTERN)
-**Confidence:** Low
+#### Editor Edit Creates Grain/Texture Mismatch on sref-Assisted Images
+**Pattern ID:** `ed02`
+**Confidence:** Low (0% success, 1 test)
 
-**Symptom:** Adding new descriptors to fix a gap causes regression on other positional/compositional elements.
+**Symptom:** Preserved area has coarse sref-transferred grain; regenerated area has different/smoother grain.
 
-**Cause:** Possible prompt-length/attention trade-off in MJ V7. Adding keywords lengthens prompt and may dilute attention to existing elements.
+**Cause:** Editor edit regenerates only the selected area, which loses the sref grain transfer applied to the full image.
 
 **Fix:**
-- When adding new descriptors, check whether existing positional/compositional elements are at risk
-- Consider Vary Subtle on a strong candidate instead of prompt edits that lengthen the prompt
-- If prompt edit necessary, try replacing rather than appending keywords
+- When using editor edit on sref-assisted images, the regenerated area will have different grain character than the preserved area
+- This is especially visible with heavy film grain
+- Consider whether the texture discontinuity is acceptable before using editor edit
 
-**Evidence:** Session 0ff95168. Iteration 2 had doorway on left in 3/4 images. Iteration 3 added levitation keywords (~50% prompt length increase) and doorway compliance dropped to 2/4. Hypothesis — needs validation.
+**Evidence:** Session 17bbeab3 iter 15. Preserved figure had coarse sref-transferred grain; regenerated background had smoother different grain.
 
 ---
 
-#### Adding Keywords to High-Scoring Prompts (0.80+) Destabilizes Them
-**Pattern ID:** `auto-prompt-structure-dont-embellish-optimized` (ANTI-PATTERN)
-**Confidence:** Low
+## Patterns Requiring Further Validation
 
-**Symptom:** Score regression after adding mood keywords, artist references, or stylistic embellishments to an already-optimized prompt.
+The following patterns have been observed once and need cross-session validation before increasing confidence level:
 
-**Cause:** High-scoring prompts are fragile equilibria. Additional keywords disturb the balance.
-
-**Fix:**
-- Once a prompt achieves high scores (0.80+), resist adding more keywords
-- Treat high-scoring prompts as fragile
-- Test additions in separate branches, not by appending to the winner
-- Use Vary Subtle for polish instead
-
-**Evidence:** Iteration 5's 0.83 dropped to 0.73 when mood/artist words were added in iteration 6.
+- **auto-color-swatch-triggers-paint** — Needs at least 2 more tests confirming painted swatches in clean gradient attempts
+- **auto-defocused-triggers-lens-effects** — Needs validation that "smooth" consistently outperforms "defocused" across multiple gradient sessions
+- **auto-water-vortex-triggers-3d-fluid** — Needs tests comparing water keywords vs alternative linework descriptions
+- **auto-fine-brushstrokes-ignored** — Needs comparison tests of "brushstrokes" vs "hair-thin strokes"
+- **auto-torn-paper-creates-frame** — Needs tests with different edge descriptors
+- **auto-double-exposure-degrades-photo** — Single photo session; needs validation in other photorealistic contexts
+- **auto-continuous-vs-isolated-forms** — Pattern/void tradeoff needs testing across 2+ sessions
+- **material-contrast-needs-physical-desc** — Needs tests comparing abstract vs physical material descriptions
+- **border-triggers-print-framing** — Needs tests of border-only, print-only, and combined variations
 
 ---
 
-#### Prompt Edits After Iteration 6 Have 0% Success Rate
-**Pattern ID:** `reflect-prompt-edit-ceiling` (ANTI-PATTERN)
-**Confidence:** Medium
-
-**Symptom:** Sessions plateau and incremental keyword changes stop producing improvement after iteration 6.
-
-**Cause:** Prompt-only optimization hits ceiling. Continued tweaking yields diminishing returns.
-
-**Fix:**
-- After 6 failed prompt edits, switch strategy:
-  - Introduce `--sref` with a reference image
-  - Fundamentally restructure the concept
-  - Accept current quality and polish with Vary Subtle
-- The only session that broke a late-stage plateau (bf0036e5) introduced --sref at iteration 12 — a strategy change, not incremental tweaking
-
-**Evidence:** Cross-session reflection finding. Iters 7+ had 0/10 success rate across 5 multi-iteration sessions.
-
----
-
-#### Capability Mismatch: Fighting MJ Limitations
-**Pattern ID:** `meta-capability-check` (ANTI-PATTERN)
-**Confidence:** Medium
-
-**Symptom:** Sessions attempting effects MJ fundamentally cannot produce consume 7+ iterations then get abandoned.
-
-**Cause:** Core intent misaligned with MJ strengths vs known limitations.
-
-**Fix:**
-- Before committing to a session, assess whether intent aligns with MJ strengths (photorealism, abstract gradients, style transfer) vs known limitations (ICM motion blur, 2D/3D material contrast within single figure, fine linework control)
-- If core effect is a known limitation, recommend --sref or adjusted intent upfront rather than iterating on keywords
-
-**Evidence:** Cross-session contrastive analysis: 5/5 abandoned sessions fought MJ limitations, 6/6 successes worked with MJ strengths.
-
----
-
-### Prompt Structure Anti-Patterns
-
-#### White Background Ignored with Art Movement Names
-**Pattern ID:** `auto-composition-white-bg-art-context` (ANTI-PATTERN)
-**Confidence:** Low (0% success, 2 tests)
-
-**Symptom:** Dark/gallery backgrounds rendered instead of white background.
-
-**Cause:** Art movement labels (color field painting), gallery words (gallery artwork), and artist names override white background request.
-
-**Fix:**
-- When white background is essential, avoid art movement labels, gallery words, and artist names
-- Use "fine art print" instead, which preserves white background while providing art-quality anchoring
-
----
-
-#### Artist Reference Keywords Trigger 3D/Physical Rendering
-**Pattern ID:** `auto-style-artist-ref-triggers-3d` (ANTI-PATTERN)
-**Confidence:** Low (0% success, 2 tests)
-
-**Symptom:** Physical art installation or 3D object rendering even without gallery/exhibition context words.
-
-**Cause:** Artist name alone anchors rendering toward physical art in MJ V7.
-
-**Fix:**
-- Avoid artist references entirely when seeking flat/graphic output
-- The advice to "use artist inspiration without gallery context" is insufficient
-- Use mood/quality descriptors (contemplative, luminous) separated from artist names
-
----
-
-#### Leading with Abstract Medium Loses Luminosity
-**Pattern ID:** `pat-medium-first-loses-detail` (ANTI-PATTERN)
-**Confidence:** Low
-
-**Symptom:** Flat but lifeless results lacking luminosity.
-
-**Cause:** Leading with abstract medium description (geometric abstraction, concentric rounded squares) and omitting specific material/light descriptors.
-
-**Fix:**
-- Include visual-quality descriptors even in minimal prompts: "translucent", "soft diffused light", "warm glow"
-- Material feel and light quality are essential for luminous results
-
-**Evidence:** Discovered in iteration 3A. Over-simplification lost translucent glow quality.
-
----
-
-#### Prompt Expansion Dilutes Priority Details
-**Pattern ID:** `prompt-expansion-dilution` (ANTI-PATTERN)
-**Confidence:** Low
-
-**Symptom:** Specific details (like eye characteristics) get lost when expanding a minimal prompt to full composition.
-
-**Cause:** V7 weights beginning of prompt most heavily. Expansion pushes critical details further back, diluting their priority.
-
-**Fix:**
-- Restructure expanded prompts so the MOST CRITICAL visual detail stays at the very front
-- Use pattern: [Critical detail] + [Medium] + [Subject context]
-- NOT: [Medium] + [Subject] + [Critical detail buried in middle]
-
----
-
-**Total Patterns:** 14 failure-mode patterns + 9 anti-patterns from other categories
-**Last Generated:** 2026-02-08
+**Total Patterns:** 18 failure-mode patterns (3 Medium, 15 Low)
+**Last Generated:** 2026-02-09

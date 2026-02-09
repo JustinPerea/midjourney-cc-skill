@@ -2,7 +2,7 @@
 
 A Claude Code skill that iterates on Midjourney prompts, scores results on 7 dimensions, and builds a knowledge base of what actually works. Each session feeds a learning loop — patterns are extracted from successes and failures, keywords are ranked by effectiveness, and failure modes are cataloged. Over time, first-attempt quality improves as the system applies accumulated craft knowledge.
 
-> **17 sessions, 90 iterations, 91 patterns, 121 tracked keywords** — and growing.
+> **18 sessions, 91 iterations, 94 patterns, 121 tracked keywords** — and growing.
 
 ## See It In Action
 
@@ -170,16 +170,69 @@ This is a different kind of learning — not "which keywords work" but "which ae
 
 ---
 
+### Looping Animation — What Survives Motion
+
+**Goal:** Generate an abstract form optimized for seamless looping animation, then test MJ's Loop animation with both Low and High Motion to discover what makes a good animation source image. This was the system's first animation session — everything about the workflow had to be figured out live.
+
+| Source Image (0.91) | Alternate (Orbital Bands) | Loop Low Motion | Loop High Motion |
+|:-:|:-:|:-:|:-:|
+| ![Plasma torus](docs/examples/animation/source-torus.png) | ![Orbital bands](docs/examples/animation/source-orbital.png) | ![Low motion](docs/examples/animation/loop-low-motion.png) | ![High motion](docs/examples/animation/loop-high-motion.png) |
+
+**The prompt:**
+```
+luminous abstract organic torus, smooth flowing form with radial symmetry,
+soft iridescent surface catching light, glowing from within, centered on
+pure black void, hypnotic meditative energy
+--ar 1:1 --s 100 --style raw
+--no text, subject, person, figure, landscape, horizon, background detail,
+    ground, floor, texture, grain, noise, pattern
+```
+
+#### Why this prompt structure works for animation
+
+The system had zero animation patterns in its database — coverage score was 0.18. Community research filled the gap: symmetrical forms on clean backgrounds loop best, internal glow gives MJ something to animate, and heavy `--no` lists prevent background detail that creates jarring motion artifacts.
+
+Key design choices:
+- **Radial symmetry** — the start and end frames of a loop need to match. Symmetric forms have more "paths back" to their starting state.
+- **Pure black void** — no background detail means no background to warp. The form floats in darkness, and only the form moves.
+- **`--style raw`** — prevents MJ from adding its own aesthetic interpretation, keeping the source clean and predictable.
+- **Heavy `--no` list** — 14 excluded terms. Every excluded element is one less thing that could create distracting motion.
+
+#### The animation comparison
+
+The batch scored 0.894 average across all 4 images — unusually high for a first attempt, because the knowledge base already had strong abstract/lighting/composition patterns even though animation-specific data was missing. Image 1 (plasma torus, 0.911) was selected for animation testing.
+
+| Setting | What Happened | Form Preserved? |
+|---------|--------------|-----------------|
+| **Loop Low Motion** | Plasma filaments flow gently, inner glow pulses, torus shape stays completely intact | Yes — identical silhouette throughout |
+| **Loop High Motion** | Torus stretched, warped, and partially dissolved. Original form barely recognizable | No — dramatic deformation |
+
+**Low Motion** treats the source image as a constraint: "animate this, but keep it." The torus breathes — plasma filaments drift, light shifts — but the circular form never breaks. Perfect for loops where shape identity matters.
+
+**High Motion** treats the source as a starting suggestion: "start here, then go wherever." The torus is pulled apart, stretched into ribbons, reformed into something different. Visually dramatic, but the loop seam is visible because start and end states diverge too far.
+
+#### What the system learned (first animation patterns)
+
+Three patterns were extracted and added to the database — the beginning of an animation knowledge category:
+
+- **Loop Low Motion = form-preserving** — Ideal for abstract loops, geometric subjects, brand animations. The source shape is a hard constraint.
+- **Loop High Motion = dramatic deformation** — Better for cinematic one-shots or abstract art where transformation is the point. Not for seamless loops.
+- **Animation source image recipe** — Radial symmetry + clean black background + internal glow + centered composition + heavy `--no` list + `--style raw`. This combination scored 0.911 as a still and produced excellent animation.
+
+**Other discoveries:** Animation generates 4 video variations (index 0-3), costs ~8x a regular generation, and produces 5-second clips. The video polling workflow (navigate to job page, check for `<video>` element) was documented in `rules/auto-core-workflows.md` for future sessions.
+
+---
+
 ## What It Learns
 
-Real numbers from the database after 17 sessions:
+Real numbers from the database after 18 sessions:
 
 | What | Count | How It's Used |
 |------|-------|---------------|
-| **Patterns** | 91 across 13 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
+| **Patterns** | 94 across 14 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
 | **Keywords** | 121 tracked | Ranked by effectiveness. Bad keywords actively avoided |
 | **Failure modes** | 15 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
-| **Action decisions** | 90 logged | Which action (Vary, prompt edit, sref, editor) works best for which gap type |
+| **Action decisions** | 91 logged | Which action (Vary, prompt edit, sref, editor, animate) works best for which gap type |
 
 <details>
 <summary>Example pattern card (from database)</summary>
@@ -208,7 +261,7 @@ Evidence: Session 17bbeab3 — 3 A/B comparisons across iter 9-14.
 
 ```
 You describe what you want
-  → System queries 91 patterns + 121 keywords for relevant knowledge
+  → System queries 94 patterns + 121 keywords for relevant knowledge
     → Constructs an informed prompt (applying known good keywords, avoiding known bad ones)
       → Submits to Midjourney via browser automation (or you paste manually)
         → Scores the output on 7 dimensions (subject, lighting, color, mood, composition, material, spatial)
