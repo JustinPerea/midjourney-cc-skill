@@ -2,7 +2,7 @@
 
 A Claude Code skill that teaches itself Midjourney prompt engineering. It starts with a structured understanding of Midjourney built from the [official documentation](https://docs.midjourney.com) — V7 parameters, prompt syntax, reference systems (`--sref`, `--oref`), style codes, and a visual-quality-to-keyword translation framework. Then it learns by doing: each session feeds a loop where patterns are extracted from successes and failures, keywords are ranked by effectiveness, and failure modes are cataloged. Over time, first-attempt quality improves as the system applies accumulated craft knowledge on top of its documentation foundation.
 
-> **18 sessions, 91 iterations, 94 patterns, 121 tracked keywords** — and growing.
+> **19 sessions, 93 iterations, 94 patterns, 124 tracked keywords** — and growing.
 
 ## How It Works
 
@@ -42,9 +42,9 @@ Real numbers from the database after 18 sessions:
 | What | Count | How It's Used |
 |------|-------|---------------|
 | **Patterns** | 94 across 14 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
-| **Keywords** | 121 tracked | Ranked by effectiveness. Bad keywords actively avoided |
+| **Keywords** | 124 tracked | Ranked by effectiveness. Bad keywords actively avoided |
 | **Failure modes** | 15 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
-| **Action decisions** | 91 logged | Which action (Vary, prompt edit, sref, editor, animate) works best for which gap type |
+| **Action decisions** | 93 logged | Which action (Vary, prompt edit, sref, editor, animate) works best for which gap type |
 
 <details>
 <summary>Example pattern card (from database)</summary>
@@ -285,6 +285,49 @@ Three patterns were extracted and added to the database — the beginning of an 
 - **Animation source image recipe** — Radial symmetry + clean black background + internal glow + centered composition + heavy `--no` list + `--style raw`. This combination scored 0.911 as a still and produced excellent animation.
 
 **Other discoveries:** Animation generates 4 video variations (index 0-3), costs ~8x a regular generation, and produces 5-second clips. The video polling workflow (navigate to job page, check for `<video>` element) was documented in `rules/auto-core-workflows.md` for future sessions.
+
+---
+
+### Multi-Reference Particles — Folder of Animation Frames to Still Image
+
+**Goal:** Reproduce the aesthetic of a website hero animation from 4 reference screenshots — not a single image, but a folder of frames showing the same organic particle form in different states. Tests composite reference analysis (shared vs. variable qualities) and whether MJ can render particle-constructed forms rather than solid surfaces.
+
+| Reference (1 of 4) | Iter 1 — Warm (0.87) | Iter 2 — Color Fix (0.91) | Iter 3 — Final (0.92) |
+|:-:|:-:|:-:|:-:|
+| ![Reference](docs/examples/hero-particles/reference-composite.png) | ![Iter 1](docs/examples/hero-particles/iter1-warm-gold.png) | ![Iter 2](docs/examples/hero-particles/iter2-color-corrected.png) | ![Iter 3](docs/examples/hero-particles/iter3-final.png) |
+
+#### The multi-reference challenge
+
+The 4 references were screenshots from the Auros website hero — an animated particle visualization cycling through different forms: concentric contour lines, a swirling particle vortex, flowing smoke tendrils, and a translucent membrane. No single frame captures the target. The system had to identify what was *shared* across all 4 (the aesthetic) vs. what *varied* (the animation state):
+
+| Shared (target aesthetic) | Variable (animation states) |
+|---------------------------|----------------------------|
+| Pure black background | Contour lines vs. particle cloud vs. smoke vs. membrane |
+| Centered circular/spherical form | Sparse vs. dense vs. flowing vs. solid |
+| Monochrome white/gray palette | Flat 2D vs. volumetric 3D |
+| Particle/filament construction, never solid surfaces | Subtle vs. noticeable warm gold accents |
+| Self-luminous, dark center void | |
+
+#### What happened: 3 iterations, one targeted fix
+
+**Iter 1 (0.873 batch avg):** The composite analysis translated directly to a prompt-only approach using tested patterns — "pure black canvas," "high contrast," heavy `--no` list, "3D particle simulation render" as style anchor. MJ produced particle-constructed spheres with dark center voids on first attempt. But the prompt's "subtle warm gold edge highlights" was over-delivered — all 4 images had too much amber/gold vs. the neutral white references.
+
+**Iter 2 (0.896 batch avg):** Single targeted fix. Removed the warm gold language, added "monochrome neutral white," and put `warm, amber, gold, orange, yellow` in `--no`. Color scores jumped **+0.115** across the batch. Everything else held.
+
+**Iter 3 — Vary Subtle (0.904 batch avg):** Polished the best image. An orbital ring structure emerged in one variation, adding structural depth that bridged between the reference frames. Best single image: **0.917**.
+
+#### Why multi-reference worked
+
+The composite reference analysis correctly distilled 4 diverse frames into a single target aesthetic. The shared qualities became the prompt's backbone; the variable qualities were ignored (they're animation states, not style). The prompt-only approach was sufficient — no `--sref` needed — because the shared qualities (particles on black, self-luminous, center void) mapped cleanly to keywords with known effectiveness data from previous abstract sessions.
+
+#### Patterns applied (from knowledge base)
+
+- `auto-pure-black-canvas-contrast` — "pure black canvas" + "high contrast" for figure-ground
+- `auto-floating-void-isolation` — isolation language for centered forms
+- `auto-heavy-no-list-abstract` — 20+ term `--no` list for abstract output
+- `auto-no-warm-colors-blocks-contamination` — warm color blocking in `--no` (validated again here)
+
+**Final result:** 0.917 best score in 3 iterations. The multi-reference workflow — point at a folder, extract shared aesthetic, prompt from the composite — worked cleanly on its first real test.
 
 ---
 
