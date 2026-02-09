@@ -179,8 +179,82 @@ browser_wait_for({ time: 15 })
 browser_take_screenshot({ type: "png", filename: "midjourney_upscale_[timestamp].png" })
 ```
 
+**6. Editor Edit (Selective Inpainting)**
+
+Use MJ's built-in editor to mask specific areas for regeneration while preserving the rest. This is the automation path for `action_type: editor_edit` in the iteration framework.
+
+```
+-- Navigate to the image detail page
+browser_navigate({ url: "https://www.midjourney.com/jobs/[JOB_ID]?index=[IMAGE_INDEX]" })
+browser_snapshot()
+-- Click the Edit button
+browser_click({ ref: [edit_button_ref], element: "Edit button" })
+browser_snapshot()  -- verify editor opened
+```
+
+**Masking with Smart Select (preferred):**
+```
+-- Click Smart Select tool
+browser_click({ ref: [smart_select_ref], element: "Smart Select tool" })
+-- Click on the region to segment (e.g., background area)
+browser_click({ ref: [canvas_ref], element: "Canvas - select background region" })
+-- Wait for segmentation API response
+browser_wait_for({ time: 3 })
+browser_take_screenshot()  -- verify green selection mask
+-- Convert selection to erase mask
+browser_click({ ref: [erase_selection_ref], element: "Erase Selection button" })
+-- Verify: erased area shows checkerboard transparency pattern
+browser_take_screenshot()
+```
+
+**Fallback: Manual Erase tool painting:**
+If Smart Select fails (segmentation API error), use the manual Erase tool:
+```
+-- Click Erase tool (use exact ref, not name — "Erase" matches multiple buttons)
+browser_click({ ref: [erase_tool_ref], element: "Erase tool button" })
+-- Paint mask strokes on the canvas using browser_run_code for coordinate control
+browser_run_code({
+  code: `async (page) => {
+    const canvas = page.locator('canvas').first();
+    const box = await canvas.boundingBox();
+    // Paint horizontal strokes across the target area
+    for (let y = box.y + 20; y < box.y + box.height - 20; y += 15) {
+      await page.mouse.move(box.x + 20, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width - 20, y, { steps: 10 });
+      await page.mouse.up();
+      await page.waitForTimeout(50);
+    }
+    return 'Erase mask painted';
+  }`
+})
+```
+
+**Update prompt and submit:**
+```
+-- Clear and update the prompt text
+browser_run_code({
+  code: `async (page) => {
+    const textbox = page.getByRole('textbox', { name: 'What will you imagine?' });
+    await textbox.press('ControlOrMeta+a');
+    await textbox.fill('[new prompt emphasizing desired qualities for regenerated area]');
+    return 'Prompt updated';
+  }`
+})
+-- Submit the edit
+browser_click({ ref: [submit_edit_ref], element: "Submit Edit button" })
+```
+
+Then use the standard polling (step 3) and capture (step 4) sequences. The new job URL will appear in the page snapshot after submission.
+
+**Key notes:**
+- The Erase tool button has strict mode issues — `getByRole('button', { name: 'Erase' })` matches "Erase", "Erase Selection", and "Erase Background". Always use the exact element `ref` from the snapshot.
+- Smart Select may need multiple clicks on different parts of the region to build a complete mask.
+- Consider removing `--sref` or `--raw` from the edit prompt if those parameters caused the regional issue being fixed.
+- Editor edits produce 4-image batches like normal generations — capture and score all 4.
+
 ## Related Rules
 
 - `auto-reference-patterns` — Selector strategy and error handling for these workflows
-- `core-iteration-framework` — Decides which actions (upscale/vary) to perform
+- `core-iteration-framework` — Decides which actions (upscale/vary) to perform, including editor_edit
 - `learn-data-model` — Session directory structure for image storage

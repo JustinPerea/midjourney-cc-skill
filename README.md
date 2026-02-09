@@ -2,93 +2,95 @@
 
 A Claude Code skill that iterates on Midjourney prompts, scores results on 7 dimensions, and builds a knowledge base of what actually works. Each session feeds a learning loop — patterns are extracted from successes and failures, keywords are ranked by effectiveness, and failure modes are cataloged. Over time, first-attempt quality improves as the system applies accumulated craft knowledge.
 
-> **13 sessions, 64 iterations, 82 patterns, 106 tracked keywords** — and growing.
+> **15 sessions, 79 iterations, 88 patterns, 106 tracked keywords** — and growing.
 
 ## See It In Action
 
-### Surreal Fujifilm Street Photography
+### Surreal B&W Film Portrait — Tradeoff Discovery
 
-**Goal:** Surreal street photography with authentic Fujifilm film simulation color science — but MJ kept ignoring the surreal elements.
+**Goal:** A surreal headless figure with lilies growing from the neck, heavy B&W film grain, flat even lighting on a seamless gray backdrop. Match a specific reference photo's grain character and deadpan mood. Target: 0.93 score.
 
-| Iteration 1 (0.87 avg) | Iteration 3 — Whale (0.90) | Iteration 6 — Paper Cranes (0.92) |
-|:-:|:-:|:-:|
-| ![Iter 1](docs/examples/surreal-street/iter-01-best.png) | ![Iter 3](docs/examples/surreal-street/iter-03-whale.png) | ![Iter 6](docs/examples/surreal-street/iter-06-final.png) |
-
-**What happened:** Iteration 1 nailed the Fujifilm Superia color science (teal shadows, amber highlights, organic grain) — but produced zero surrealism. "Impossible reflections" and "surreal" were treated as mood words, not visual instructions. The system diagnosed this as a prompt-level issue: abstract modifiers get ignored when concrete subject keywords dominate.
-
-**Key pivot (iter 2 → 3):** Replaced abstract surreal modifiers with a single concrete impossible element — "a massive whale silhouette swimming through the fog above the rooftops." Score jumped +0.03 while fully restoring the photorealistic Fujifilm base that "double exposure" had degraded in iter 2.
-
-**Pattern extracted:** *Concrete impossible elements > abstract surreal modifiers.* MJ renders a specific impossible object (whale, floating cranes, koi fish) reliably, but ignores mood-level words like "surreal" or "impossible reflections." This pattern now applies to all future sessions involving surrealism.
-
----
-
-### XSULLO "Hibernal" Cosmic Portrait
-
-**Goal:** Recreate an XSULLO painting — cosmic void face with multiple eyes, rainbow iridescent spray-paint body. The hard part: achieving sharp 2D/3D material contrast between a flat void face and a volumetric body.
-
-| Reference | Iteration 1 (0.75 avg) | Iteration 14 — Breakthrough (0.82) | Iteration 16 — Final (0.86) |
+| Reference | Iteration 1 (0.85) | Iteration 4 — Peak (0.90) | Iteration 9 — Grain Breakthrough |
 |:-:|:-:|:-:|:-:|
-| ![Reference](docs/examples/cosmic-portrait/reference.png) | ![Iter 1](docs/examples/cosmic-portrait/iter-01-best.png) | ![Iter 14](docs/examples/cosmic-portrait/iter-14-breakthrough.png) | ![Iter 16](docs/examples/cosmic-portrait/iter-16-final.png) |
+| ![Reference](docs/examples/flower-head/reference.jpg) | ![Iter 1](docs/examples/flower-head/iter-01-best.png) | ![Iter 4](docs/examples/flower-head/iter-04-best.png) | ![Iter 9](docs/examples/flower-head/iter-09-grain.png) |
 
-**What happened:** 16 iterations across two phases. Prompt-only edits (iter 1-11) hit a ceiling at ~0.80 — the material contrast gap persisted through 8 different vocabulary approaches. "White outline edge" and "sharp cutout" didn't create visible separation. Adding `--sref` with the reference image at `--sw 200` (iter 12+) finally pulled structural features, not just style.
+#### Setup decisions
 
-**Key pivot (iter 13 → 14):** Changed "eye-slits arranged down" to "almond eyes stacked vertically." MJ had been interpreting "slits" as tear drips. "Almond" produced actual eye shapes. Combined with `--sw 200`, this cracked the multi-eye barrier — image 2 showed 5-6 vertical pink eyes matching the reference.
+The system analyzed the reference image and made three upfront choices before generating anything:
 
-**Patterns extracted:**
-- *"Almond eyes stacked vertically" >> "eye-slits arranged down"* — MJ's vocabulary interpretation matters more than your intent
-- *--sw 200 pulls structural features from sref* — default 100 transfers only color/style, 200 also influences composition
-- *Opposing material adjectives create contrast* — "flat matte black" vs "glossy luminous rainbow" produces visible 2D/3D contrast; generic "outline edge" doesn't
-- *Vary Subtle preserves structural breakthroughs* — multi-eye survived 2 rounds of Vary Subtle without regression
+1. **Hybrid approach** — Use `--sref` with the reference for grain/mood transfer (hard to describe in words) while prompting explicitly for the surreal subject (headless figure, lilies). Log which aspects come from sref vs. prompt so reflection can learn from both.
+2. **Second sref for grain** — The reference's film grain was the hardest quality to reproduce. The system found a dedicated grain reference photo and blended it as a weighted secondary sref (`grain::2 flower::1`), targeting the specific dimension where prompt keywords have the weakest control.
+3. **Knowledge application** — Queried 88 patterns before writing the prompt. Applied "front-load critical details" (V7 weights prompt beginning), checked keyword effectiveness for B&W film descriptors, and avoided known failure modes like "clean" + "sharp" co-occurring with film grain intent.
 
----
+#### What happened: 15 iterations across 6 approaches
 
-### Minimal Teal Gradient
+**Rapid convergence (iter 1-4).** The knowledge-informed first prompt scored 0.85 — subject, mood, and color were strong immediately. Three iterations of prompt refinement (adding "flat overcast softbox lighting," expanding the `--no` list) pushed the best image to **0.90** by iteration 4. The system recommended Vary Subtle to polish rather than prompt edit, following the "fragile equilibria above 0.80" pattern.
 
-**Goal:** A clean vertical gradient from deep teal to white. No subject, no texture. Sounds simple — it wasn't.
+**Pushing for 0.93 revealed a fundamental tradeoff.** Grain and lighting couldn't be maximized simultaneously — they pulled in opposite directions:
 
-| Reference | Iteration 1 (0.82 avg) | Iteration 4 — Sky Metaphor | Iteration 6 — Final |
-|:-:|:-:|:-:|:-:|
-| ![Reference](docs/examples/gradient/reference.png) | ![Iter 1](docs/examples/gradient/iter-01-best.png) | ![Iter 4](docs/examples/gradient/iter-04-sky.png) | ![Iter 6](docs/examples/gradient/iter-06-final.png) |
+| Approach | Iters | Best Score | Grain | Lighting | What It Proved |
+|----------|-------|-----------|-------|----------|---------------|
+| Balanced (prompt + dual sref) | 1-4 | **0.90** | 0.85 | 0.84 | Best overall, but neither dimension maxed |
+| Vary Subtle | 5, 7, 10 | 0.887 | 0.87 | 0.80 | Maintains structure, regresses lighting |
+| Grain-only sref | 9 | 0.879 | **0.93** | 0.74 | Grain breakthrough — but too dark |
+| Flat lighting prompt | 8 | 0.884 | 0.82 | **0.88** | Lighting +0.06 — but grain drops |
+| `--raw` toggle | 12 | 0.871 | 0.84 | 0.85 | Confirmed: raw = grain + dark |
+| **Editor inpainting** | 13 | 0.860 | 0.86 | 0.79 | New approach — see below |
 
-**What happened:** MJ defaulted to horizontal gradients, added bokeh spots, and resisted directional control. Ultra-minimal prompts (iter 3: just "dark teal to white gradient, vertical, top to bottom") improved direction but "vertical" triggered stripe patterns in 1 of 4 images. The sky metaphor (iter 4: "clear dusk sky, deep muted teal zenith") produced the smoothest transitions — but injected warm sunset glow at the bottom.
+**Key pivot (iter 8):** Adding "flat shadowless studio lighting" + "completely even soft illumination" and putting `dramatic lighting, side lighting, rim light` in `--no` improved lighting by **+0.06** — the single biggest dimension jump in the session. But the grain sref fought back: it transfers dark, contrasty lighting alongside the grain texture.
 
-**Failure modes discovered:**
-- "Color swatch" + "wash" → MJ renders watercolor paint on paper, not a digital gradient
-- "Defocused" → triggers lens glow/aurora effects instead of smoothing
-- "Vertical" as standalone word → can trigger vertical stripe/bar patterns
-- Sky/horizon metaphors → inject warm sunset colors regardless of `--no` list
+#### Editor inpainting — a new tool
 
-**Pattern extracted:** *Sky metaphors produce the smoothest gradients but contaminate the color palette.* For pure color control, use "smooth color transition from [color] at top to [color] at bottom" with explicit `--no` for warm colors.
+After exhausting prompt-level approaches, the system tried MJ's built-in editor to selectively regenerate only the background while preserving the figure's grain:
+
+| Editor mask (background erased) | Editor result (iter 13) |
+|:-:|:-:|
+| ![Editor mask](docs/examples/flower-head/editor-mask.png) | ![Editor result](docs/examples/flower-head/iter-13-editor.png) |
+
+Smart Select segmented the background cleanly. The prompt was updated to emphasize flat gray backdrop with `--raw` and `--sw` removed. But the regenerated background introduced **walls and corners** instead of flat gray — the preserved figure implied a physical space, so MJ filled in environmental context. A new failure mode was discovered and cataloged.
+
+#### Patterns extracted
+
+The session produced 3 new patterns added to the database:
+
+- **`--raw` = grain vs. lighting toggle** (medium confidence, 3 A/B tests): `--style raw` increases grain fidelity but darkens the image. No single-prompt solution exists for maximizing both.
+- **Editor environmental intrusion** (low confidence, 1 test): MJ's inpainting adds walls/surfaces when regenerating backgrounds around a preserved figure, even when the prompt says "seamless backdrop."
+- **Editor grain mismatch** (low confidence, 1 test): Regenerated areas have different grain character than sref-assisted preserved areas, creating a visible texture split.
+
+**Final result:** Session closed at **0.90** (iter 4, img-1). The 0.93 target was identified as unreachable with current techniques — the grain-vs-lighting tradeoff is a real ceiling for this subject/reference combination, not a prompt problem to solve. That honest identification is itself valuable: future sessions with similar tradeoffs can skip 10 iterations of dead ends.
 
 ---
 
 ## What It Learns
 
-Real numbers from the database after 13 sessions:
+Real numbers from the database after 15 sessions:
 
 | What | Count | How It's Used |
 |------|-------|---------------|
-| **Patterns** | 82 across 11 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
-| **Keywords** | 106 tracked | Ranked by effectiveness (36 excellent, 31 good, 11 poor, 21 counterproductive). Bad keywords actively avoided |
-| **Failure modes** | 13 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
-| **High-confidence patterns** | 4 graduated | Tested 5+ times with 100% success rate. These are applied with highest priority |
+| **Patterns** | 88 across 12 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
+| **Keywords** | 106 tracked | Ranked by effectiveness. Bad keywords actively avoided |
+| **Failure modes** | 16 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
+| **Action decisions** | 79 logged | Which action (Vary, prompt edit, sref, editor) works best for which gap type |
 
 <details>
 <summary>Example pattern card (from database)</summary>
 
 ```
-Pattern: vary-subtle-structural-stability
-Category: workflow | Confidence: high | Success rate: 100% (2/2)
+Pattern: raw-grain-lighting-tradeoff
+Category: technique | Confidence: medium | Success rate: 33% (1/3)
 
-Problem: Need to polish high-scoring structural breakthrough without losing
-         the structural feature
+Problem: Need both heavy film grain and flat even lighting in the same image.
+         --style raw increases grain but darkens. Removing raw brightens but
+         reduces grain.
 
-Solution: Vary Subtle preserves structural breakthroughs (like multi-eye)
-          across multiple rounds. Multi-eye remained stable across 2 rounds
-          of Vary Subtle (iter 14→15→16). Safe to use for polishing.
+Solution: Accept the balanced result (with --raw at moderate sref weight)
+          rather than trying to maximize both. Alternatively, use editor edit
+          to fix lighting regionally, accepting some texture mismatch.
 
-Evidence: Session bf0036e5 — iter 14 (0.84) → Vary Subtle → iter 15 (0.845)
-          → Vary Subtle → iter 16 (0.855)
+Evidence: Session 17bbeab3 — 3 A/B comparisons across iter 9-14.
+          raw+grain sref: grain 0.93, lighting 0.74
+          no raw: grain 0.84, lighting 0.85
+          balanced: grain 0.85, lighting 0.84 (best overall at 0.90)
 ```
 
 </details>
@@ -97,11 +99,11 @@ Evidence: Session bf0036e5 — iter 14 (0.84) → Vary Subtle → iter 15 (0.845
 
 ```
 You describe what you want
-  → System queries 82 patterns + 106 keywords for relevant knowledge
+  → System queries 88 patterns + 106 keywords for relevant knowledge
     → Constructs an informed prompt (applying known good keywords, avoiding known bad ones)
       → Submits to Midjourney via browser automation (or you paste manually)
         → Scores the output on 7 dimensions (subject, lighting, color, mood, composition, material, spatial)
-          → Gap analysis determines: Vary Subtle, Vary Strong, or prompt rewrite?
+          → Gap analysis determines: Vary Subtle, Vary Strong, prompt rewrite, sref, or editor edit?
             → Patterns extracted from what worked and what didn't
               → Knowledge compounds across sessions
 ```

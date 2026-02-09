@@ -197,6 +197,8 @@ After each iteration, the agent must decide the next action. This decision is tr
 | Prompt edit | `prompt_edit` | Rewrite or modify the prompt text and regenerate |
 | Vary Subtle | `vary_subtle` | Small refinements to a specific image |
 | Vary Strong | `vary_strong` | Bigger changes while keeping the direction |
+| Ref-Assisted Gap Closure | `ref_gap_closure` | Introduce a quality-specific `--sref` to break a dimension ceiling |
+| Editor Edit | `editor_edit` | Use MJ's built-in editor to selectively mask and regenerate specific image areas |
 | Rerun | `rerun` | Same prompt, new seed — test consistency |
 | Upscale Subtle | `upscale_subtle` | Image is good, increase resolution faithfully |
 | Upscale Creative | `upscale_creative` | Image is good, increase resolution with enhancement |
@@ -211,9 +213,11 @@ These rules are the starting heuristic. As iterations accumulate, reflection sho
 | **Single element wrong** — one detail (position, color, count) off but rest is good | Vary Subtle on best candidate | Most things are right; small nudge fixes the rest |
 | **Right concept, wrong execution** — the idea is there but rendering/style is off | Vary Strong on best candidate | Keep the direction, remix the details |
 | **Multiple elements wrong** — 2+ things need fixing simultaneously | Prompt edit | Too many things to fix through variation alone |
+| **Dimension ceiling** — batch avg > 0.75 but one dimension stuck (±0.03) across 2+ prompt edits | Ref-Assisted Gap Closure | Prompt-level keywords have hit their limit for this quality; a visual reference can push past it |
 | **Mostly right, want polish** — image is 85%+ match, minor refinements needed | Vary Subtle | Preserve what works, nudge what doesn't |
 | **Inconsistency across batch** — some images nail it, others don't, same prompt | Vary Subtle on best | The prompt works; just need the right seed |
 | **Everything wrong** — fundamental mismatch with intent | Prompt edit (major rewrite) | Start fresh with different approach |
+| **Regional quality split** — some areas are excellent but others have persistent issues | Editor Edit on best candidate | Preserves good areas while regenerating only the problem regions |
 
 ### When to Vary vs. Prompt Edit
 
@@ -228,6 +232,65 @@ These rules are the starting heuristic. As iterations accumulate, reflection sho
 - The gap is conceptual (MJ interpreted the prompt differently than intended)
 - The same element is wrong across all 4 images (batch-level failure = prompt problem)
 - You need to add or remove a major element
+
+### Reference-Assisted Gap Closure
+
+When prompt edits can't move a specific scoring dimension, a targeted `--sref` reference can break the ceiling. This is the escalation step between "keep editing the prompt" and "abandon this direction."
+
+**Trigger conditions (all must be true):**
+- Batch avg > 0.75 (the prompt is working overall)
+- One dimension has been the lowest scorer for 2+ consecutive iterations
+- Different prompt strategies (different keywords, parameters, or approaches) moved that dimension by ±0.03 or less
+
+**Procedure:**
+1. **Flag the dimension** as a "prompt ceiling" in the gap analysis:
+   ```json
+   {"prompt_ceiling": {"dimension": "texture", "stuck_score": 0.65, "iterations_stuck": 3}}
+   ```
+2. **Find a reference image** where the stuck quality is the dominant visual characteristic. For example: a heavily grainy film scan for texture, a backlit silhouette for lighting, a brutalist concrete surface for material.
+3. **Blend as secondary sref** with lower weight so it influences the stuck dimension without overriding the primary style:
+   ```
+   --sref <primary>::2 <quality-ref>::1
+   ```
+   If no primary sref exists, use the quality reference alone at `--sw 100–150`. See `core-prompt-construction.md` for `--sref` weighting syntax and `--sw` sweet spots.
+4. **Log the iteration** with `action_type: ref_gap_closure` and note which dimension the reference targets.
+
+**Why this works:** MJ's `--sref` system reads visual qualities (grain, sharpness, material texture) from the reference image more reliably than prompt keywords can specify them. A reference that embodies the stuck quality provides a direct visual signal for something words couldn't adequately describe.
+
+**When NOT to use this:**
+- The stuck dimension is spatial/compositional — sref influences style, not layout
+- Batch avg < 0.75 — the prompt has bigger problems than one dimension ceiling
+- The dimension moved significantly between iterations but regressed — that's a fragile equilibrium problem, not a ceiling
+
+### Editor Edit (Selective Inpainting)
+
+When specific regions of an image are strong but others have persistent issues, MJ's built-in editor can selectively mask and regenerate only the problem areas. This preserves proven qualities (grain texture, subject rendering, composition) while fixing isolated deficiencies.
+
+**Trigger conditions:**
+- Best image has at least one region/element scoring > 0.85 AND another region consistently < 0.80
+- The quality split is regional (e.g., great subject but bad background) rather than global (e.g., wrong color palette everywhere)
+- Prompt edits have failed to fix the weak region without degrading the strong one (the "tradeoff ceiling" problem)
+
+**Procedure:**
+1. Navigate to the best image's detail page and click **Edit**
+2. Use **Smart Select** to segment the region to regenerate (clicks on the region to build a selection mask)
+3. Click **Erase Selection** to convert the selection into an inpainting mask (checkerboard = erased)
+4. Update the prompt to emphasize the desired qualities for the regenerated area
+5. Optionally modify parameters — removing `--raw` or `--sref` that may have caused the regional issue
+6. Click **Submit Edit** — MJ regenerates only the masked area
+
+See `auto-core-workflows.md` section 6 for the browser automation sequence.
+
+**Known limitations:**
+- **Environmental intrusion:** When regenerating backgrounds, MJ tends to introduce walls, corners, and surfaces instead of flat/seamless backdrops — the preserved figure implies a physical space
+- **Texture mismatch:** The regenerated area may have a different grain/texture character than the preserved area, creating a visible quality split at the boundary
+- **Smart Select reliability:** The segmentation API can fail; fall back to manual Erase tool painting if it does
+- **Single image output:** Editor edits generate a new 4-image batch, but all share the same preserved regions — less variance than full generations
+
+**When NOT to use this:**
+- The issue is global (color, mood, overall style) — editor can't fix what's in the preserved pixels
+- The boundary between good and bad regions is fuzzy or overlapping
+- The quality split is between foreground elements (hard to segment cleanly)
 
 ### Logging Actions
 
@@ -1181,10 +1244,84 @@ browser_wait_for({ time: 15 })
 browser_take_screenshot({ type: "png", filename: "midjourney_upscale_[timestamp].png" })
 ```
 
+**6. Editor Edit (Selective Inpainting)**
+
+Use MJ's built-in editor to mask specific areas for regeneration while preserving the rest. This is the automation path for `action_type: editor_edit` in the iteration framework.
+
+```
+-- Navigate to the image detail page
+browser_navigate({ url: "https://www.midjourney.com/jobs/[JOB_ID]?index=[IMAGE_INDEX]" })
+browser_snapshot()
+-- Click the Edit button
+browser_click({ ref: [edit_button_ref], element: "Edit button" })
+browser_snapshot()  -- verify editor opened
+```
+
+**Masking with Smart Select (preferred):**
+```
+-- Click Smart Select tool
+browser_click({ ref: [smart_select_ref], element: "Smart Select tool" })
+-- Click on the region to segment (e.g., background area)
+browser_click({ ref: [canvas_ref], element: "Canvas - select background region" })
+-- Wait for segmentation API response
+browser_wait_for({ time: 3 })
+browser_take_screenshot()  -- verify green selection mask
+-- Convert selection to erase mask
+browser_click({ ref: [erase_selection_ref], element: "Erase Selection button" })
+-- Verify: erased area shows checkerboard transparency pattern
+browser_take_screenshot()
+```
+
+**Fallback: Manual Erase tool painting:**
+If Smart Select fails (segmentation API error), use the manual Erase tool:
+```
+-- Click Erase tool (use exact ref, not name — "Erase" matches multiple buttons)
+browser_click({ ref: [erase_tool_ref], element: "Erase tool button" })
+-- Paint mask strokes on the canvas using browser_run_code for coordinate control
+browser_run_code({
+  code: `async (page) => {
+    const canvas = page.locator('canvas').first();
+    const box = await canvas.boundingBox();
+    // Paint horizontal strokes across the target area
+    for (let y = box.y + 20; y < box.y + box.height - 20; y += 15) {
+      await page.mouse.move(box.x + 20, y);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width - 20, y, { steps: 10 });
+      await page.mouse.up();
+      await page.waitForTimeout(50);
+    }
+    return 'Erase mask painted';
+  }`
+})
+```
+
+**Update prompt and submit:**
+```
+-- Clear and update the prompt text
+browser_run_code({
+  code: `async (page) => {
+    const textbox = page.getByRole('textbox', { name: 'What will you imagine?' });
+    await textbox.press('ControlOrMeta+a');
+    await textbox.fill('[new prompt emphasizing desired qualities for regenerated area]');
+    return 'Prompt updated';
+  }`
+})
+-- Submit the edit
+browser_click({ ref: [submit_edit_ref], element: "Submit Edit button" })
+```
+
+Then use the standard polling (step 3) and capture (step 4) sequences. The new job URL will appear in the page snapshot after submission.
+
+**Key notes:**
+- The Erase tool button has strict mode issues — `getByRole('button', { name: 'Erase' })` matches "Erase", "Erase Selection", and "Erase Background". Always use the exact element `ref` from the snapshot.
+- Smart Select may need multiple clicks on different parts of the region to build a complete mask.
+- Consider removing `--sref` or `--raw` from the edit prompt if those parameters caused the regional issue being fixed.
+- Editor edits produce 4-image batches like normal generations — capture and score all 4.
+
 ## Related Rules
 
 - `auto-reference-patterns` — Selector strategy and error handling for these workflows
-- `core-iteration-framework` — Decides which actions (upscale/vary) to perform
+- `core-iteration-framework` — Decides which actions (upscale/vary) to perform, including editor_edit
 - `learn-data-model` — Session directory structure for image storage
 
 ---
