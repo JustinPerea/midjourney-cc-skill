@@ -1,22 +1,44 @@
 # Keyword Effectiveness
 
 **Last updated:** February 8, 2026
-**Total keywords:** 138
+**Total keywords:** 117
 
 This document catalogs keyword performance in Midjourney V7 based on logged iteration evidence. Keywords are ranked by effectiveness level and include usage statistics, actual effects observed, and contextual notes.
 
+| Tier | Count | Description |
+|------|-------|-------------|
+| Excellent | 38 | Highly reliable, consistent intended effects |
+| Good | 37 | Strong performance with contextual limitations |
+| Moderate | 8 | Mixed or context-dependent results |
+| Poor | 12 | Low effectiveness, minimal impact |
+| Counterproductive | 22 | Produces unwanted effects, avoid |
+
 ---
 
-## Excellent (43 keywords)
+## Excellent (38 keywords)
 
 Highly reliable keywords that consistently produce intended effects across multiple iterations.
 
-### 23mm f/2
-- **Intended effect:** Wide street perspective with bokeh
-- **Actual effect:** Produces authentic wide-angle street perspective. Focal length acts as compositional anchor.
-- **Usage:** 7 used, 6 effective
-- **Context:** Street photography prompts
-- **Notes:** Produces authentic wide-angle street perspective. Focal length acts as compositional anchor.
+### --sref 1568402756
+- **Intended effect:** White studio minimal product photography — clean seamless white background, soft diffuse lighting, premium retail/Apple-product-page aesthetic
+- **Actual effect:** Ultra-clean white studio environment. Near-monochrome white/light gray palette. Soft even lighting with gentle gradients, no harsh shadows. Objects rendered on pristine white seamless backgrounds with clean negative space. Very strong style override — desaturates and simplifies everything into minimal gallery presentation. Photorealistic with 3D-render quality.
+- **Usage:** 1 used, 1 effective
+- **Context:** style-code
+- **Notes:** Best for: bright, clean product shots, hero images, e-commerce. Suggested --sw 100-150. May wash out dark products — consider --sw 50-75 for dark subjects. Strong composition control — centers subjects with generous negative space.
+
+### --sref 2569901087
+- **Intended effect:** Dark studio dramatic product photography — moody charcoal/slate environment with architectural strip lighting, luxury brand campaign aesthetic
+- **Actual effect:** Dark charcoal/slate gray palette with selective warm accents (green moss, gold). Dramatic linear/strip LED lighting and rim lighting on dark backgrounds. Matte dark surfaces with rough stone/rock textures and subtle metallic accents. Pedestal/platform presentations with strong foreground/background separation. Very strong style override. Photorealistic with 3D-visualization quality.
+- **Usage:** 1 used, 1 effective
+- **Context:** style-code
+- **Notes:** Best for: luxury product photography, perfume/cosmetics, high-end brand campaigns, dark moody editorial. Suggested --sw 100-150. Strip lighting creates strong drama. Works well with gold/chrome materials. May fight with bright/airy prompts. Excellent complement to perfume bottle sessions.
+
+### Fujifilm Superia film simulation
+- **Intended effect:** Fujifilm color profile
+- **Actual effect:** Produces characteristic muted teal shadows with warm amber highlights. Combined with X100V for full Fujifilm color science.
+- **Usage:** 7 used, 7 effective
+- **Context:** Paired with camera model and --style raw
+- **Notes:** Produces characteristic muted teal shadows with warm amber highlights. Combined with X100V for full Fujifilm color science.
 
 ### abstract soft focus light
 - **Intended effect:** Lead concept for abstract blur composition
@@ -24,6 +46,13 @@ Highly reliable keywords that consistently produce intended effects across multi
 - **Usage:** 5 used, 4 effective
 - **Context:** abstract blur, ICM, front-loaded concept
 - **Notes:** Used as lead concept in iters 4,6,7,8,9. Strong orientation keyword that prevents MJ from seeking subjects.
+
+### bird's-eye perspective looking down at the plane
+- **Intended effect:** restore ground plane perspective lost in iter 2
+- **Actual effect:** successfully restored spatial grounding. Composition jumped +0.28 and spatial +0.37 vs iter 2.
+- **Usage:** 1 used, 1 effective
+- **Context:** when composition/spatial has been lost due to prefix style overrides
+- **Notes:** Session 090060cf iter 3: critical recovery keyword that merged iter 1 composition with iter 2 material gains.
 
 ### burnt sienna
 - **Intended effect:** Deep warm reddish-brown color tone
@@ -88,13 +117,6 @@ Highly reliable keywords that consistently produce intended effects across multi
 - **Context:** abstract gradients, color transitions
 - **Notes:** Session 7345a6e1 iters 2,6. Most reliable directional phrasing for vertical gradients.
 
-### Fujifilm Superia film simulation
-- **Intended effect:** Fujifilm color profile
-- **Actual effect:** Produces characteristic muted teal shadows with warm amber highlights. Combined with X100V for full Fujifilm color science.
-- **Usage:** 7 used, 7 effective
-- **Context:** Paired with camera model and --style raw
-- **Notes:** Produces characteristic muted teal shadows with warm amber highlights. Combined with X100V for full Fujifilm color science.
-
 ### gaussian blur
 - **Intended effect:** Produce soft smooth blur edges
 - **Actual effect:** Produced genuinely soft defocused output with smooth gradients
@@ -108,6 +130,13 @@ Highly reliable keywords that consistently produce intended effects across multi
 - **Usage:** 2 used, 2 effective
 - **Context:** graphic/print design, B&W
 - **Notes:** Session c2f5cce9. Reliable across both iterations with different prompt structures.
+
+### heavy coarse film grain
+- **Intended effect:** Produce visible chunky analog film grain texture
+- **Actual effect:** Grain scores 0.82-0.93 depending on sref and --raw combination. Best grain achieved with grain-only sref + --raw (0.91-0.93)
+- **Usage:** 6 used, 6 effective
+- **Context:** B&W film photography, Tri-X aesthetic, used with --style raw
+- **Notes:** More effective than film stock names (Tri-X 400, ISO 3200) or visual descriptions (dense photographic noise). Coarse is key differentiator from generic film grain. Session 17bbeab3
 
 ### high contrast linework
 - **Intended effect:** Light lines standing out against dark background
@@ -226,7 +255,7 @@ Highly reliable keywords that consistently produce intended effects across multi
 - **Actual effect:** Produces convincing internal light diffusion in glass/wax/skin
 - **Usage:** 0 used, 0 effective
 - **Context:** Translucent or semi-transparent materials
-- **Notes:** Bootstrap
+- **Notes:** Bootstrap. See also counterproductive entry: in abstract/flat contexts, this keyword forces photorealistic 3D rendering.
 
 ### surreal
 - **Intended effect:** Surreal dreamlike quality
@@ -258,9 +287,16 @@ Highly reliable keywords that consistently produce intended effects across multi
 
 ---
 
-## Good (34 keywords)
+## Good (37 keywords)
 
 Reliable keywords with strong performance but may have contextual limitations.
+
+### --sref 80385884
+- **Intended effect:** Celadon porcelain luxury — mint/teal green with gold accents, fine china aesthetic, decorative luxury
+- **Actual effect:** Consistent mint/celadon green + cream/white + gold accent palette across all subjects. Soft diffuse ethereal lighting. Everything rendered with porcelain/ceramic quality and gold trim. Semi-realistic with decorative/illustrative elements. Clean centered compositions. Very strong style override — transforms everything into porcelain-like objects.
+- **Usage:** 1 used, 1 effective
+- **Context:** style-code
+- **Notes:** Best for: luxury lifestyle products, cosmetics with pastel branding, decorative objects. Niche but distinctive. Suggested --sw 75-100 (can overpower). Gold accents complement premium products. Not suitable for dark/dramatic shots. Trending on Style Explorer (Top Month Feb 2026).
 
 ### --weird 75
 - **Intended effect:** Push output away from conventional photography
@@ -268,6 +304,20 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Usage:** 2 used, 2 effective
 - **Context:** abstract blur, unconventional output
 - **Notes:** Used in iters 2-3. Contributed to breaking away from conventional macro photography. Not needed once abstract keywords were strong enough (iters 4+).
+
+### 23mm f/2
+- **Intended effect:** Wide street perspective with bokeh
+- **Actual effect:** Produces authentic wide-angle street perspective. Focal length acts as compositional anchor.
+- **Usage:** 7 used, 6 effective
+- **Context:** Street photography prompts
+- **Notes:** Produces authentic wide-angle street perspective. Focal length acts as compositional anchor.
+
+### Cinema 4D
+- **Intended effect:** 3D render aesthetic
+- **Actual effect:** Slightly more stylized 3D look than Octane
+- **Usage:** 0 used, 0 effective
+- **Context:** Motion graphics / stylized 3D
+- **Notes:** Bootstrap
 
 ### atmospheric color transition
 - **Intended effect:** Smooth gradient language
@@ -297,19 +347,19 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Context:** lighting, internal glow, abstract forms
 - **Notes:** Iter 2: added to fix glow pooling at bottom. Worked alongside perspective fix.
 
-### Cinema 4D
-- **Intended effect:** 3D render aesthetic
-- **Actual effect:** Slightly more stylized 3D look than Octane
-- **Usage:** 0 used, 0 effective
-- **Context:** Motion graphics / stylized 3D
-- **Notes:** Bootstrap
-
 ### clear dusk sky
 - **Intended effect:** Sky metaphor for smooth gradient
 - **Actual effect:** Produced beautifully smooth gradient with correct muted teal hue
 - **Usage:** 1 used, 1 effective
 - **Context:** abstract gradients, smooth color transitions
 - **Notes:** Session 7345a6e1 iter 4. Best smoothness of all iterations. Triggers warm sunset at bottom though.
+
+### completely even soft illumination
+- **Intended effect:** Reinforce flat lighting from all directions
+- **Actual effect:** Supporting phrase that helped maintain flat lighting alongside flat shadowless studio lighting
+- **Usage:** 6 used, 5 effective
+- **Context:** B&W film photography, surreal portrait, paired with flat shadowless studio lighting
+- **Notes:** Works as reinforcement for flat lighting intent. Alone may not be sufficient. Session 17bbeab3
 
 ### diagonal slash
 - **Intended effect:** Bold diagonal geometric element
@@ -325,6 +375,13 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Context:** abstract blur, ICM, subject-free
 - **Notes:** Used in iters 4,6,8,9. Effective subject-free form descriptor. Sometimes produced static bokeh orbs rather than dissolving effect.
 
+### dramatic lighting (in --no)
+- **Intended effect:** Prevent MJ from adding dramatic directional lighting
+- **Actual effect:** Reduced side lighting tendency when combined with other --no lighting terms. Lighting improved from ~0.78 to ~0.83
+- **Usage:** 6 used, 4 effective
+- **Context:** B&W film photography, used in --no list alongside side lighting and rim light
+- **Notes:** Part of a trio: dramatic lighting + side lighting + rim light in --no. More effective together than individually. Does not fully eliminate directionality when sref carries dark contrasty lighting. Session 17bbeab3
+
 ### dreamy ethereal atmosphere
 - **Intended effect:** Set mood for dreamy output
 - **Actual effect:** Contributed to ethereal quality especially at --s 100
@@ -338,6 +395,13 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Usage:** 6 used, 5 effective
 - **Context:** abstract blur, ICM, style anchor
 - **Notes:** Used across most iterations. Reliable style anchor. Less dominant than fine art print but effective for abstract blur photography.
+
+### flat shadowless studio lighting
+- **Intended effect:** Produce flat even lighting without shadows or directionality
+- **Actual effect:** Improved lighting flatness by +0.06 vs previous iterations. Lighting scores rose from ~0.78-0.80 to 0.83-0.85
+- **Usage:** 6 used, 5 effective
+- **Context:** B&W film photography, surreal portrait, used with --style raw and sref
+- **Notes:** Most effective when combined with --no dramatic/side/rim lighting. Without --no, MJ still injects some directionality. Session 17bbeab3
 
 ### floating on pure black void
 - **Intended effect:** Isolate elements on black background with breathing room
@@ -353,14 +417,14 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Context:** Forms that should flow but not be wet
 - **Notes:** Bootstrap
 
-### gentle light diffusion (1)
+### gentle light diffusion (abstract blur context)
 - **Intended effect:** Smooth gradient light transitions
 - **Actual effect:** Contributed to smooth gradients between warm and cool zones
 - **Usage:** 4 used, 3 effective
 - **Context:** abstract blur, ICM, light quality
 - **Notes:** Used in iters 4,6,8,9. Subtle but supportive keyword for smooth light transitions.
 
-### gentle light diffusion (2)
+### gentle light diffusion (gradient context)
 - **Intended effect:** soft light quality in gradients
 - **Actual effect:** Contributes to smooth gradient transitions
 - **Usage:** 5 used, 3 effective
@@ -437,6 +501,20 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Context:** material/surface quality
 - **Notes:** Session c2f5cce9.
 
+### retro-futuristic psychedelic
+- **Intended effect:** set mood and era for the illustration style
+- **Actual effect:** consistently contributed to mood dimension. One of the most stable keywords across iterations.
+- **Usage:** 7 used, 5 effective
+- **Context:** illustration and graphic design contexts
+- **Notes:** Session 090060cf: mood scores consistently 0.65-0.79 across all iterations. Good mood keyword.
+
+### rim light (in --no)
+- **Intended effect:** Prevent rim/edge lighting on subject
+- **Actual effect:** Contributed to reduced directional lighting alongside other --no lighting terms
+- **Usage:** 6 used, 4 effective
+- **Context:** B&W film photography, used in --no list with dramatic lighting and side lighting
+- **Notes:** Part of lighting --no trio. Helps suppress MJ default dramatic portrait lighting tendency. Session 17bbeab3
+
 ### satin
 - **Intended effect:** Middle ground between matte and glossy
 - **Actual effect:** Produces subtle sheen, soft reflections
@@ -450,6 +528,13 @@ Reliable keywords with strong performance but may have contextual limitations.
 - **Usage:** 1 used, 1 effective
 - **Context:** abstract gradients, color transitions
 - **Notes:** Session 7345a6e1 iter 6. Image 2 (without lens effects from defocused) showed good gradient.
+
+### side lighting (in --no)
+- **Intended effect:** Prevent side-lit dramatic look
+- **Actual effect:** Contributed to reduced directional lighting alongside other --no lighting terms
+- **Usage:** 6 used, 4 effective
+- **Context:** B&W film photography, used in --no list with dramatic lighting and rim light
+- **Notes:** Part of lighting --no trio. Effective when grain sref is not overriding with its own dark lighting aesthetic. Session 17bbeab3
 
 ### soft diffused light
 - **Intended effect:** soft lighting quality without forcing photorealism
@@ -467,7 +552,7 @@ Reliable keywords with strong performance but may have contextual limitations.
 
 ---
 
-## Moderate (7 keywords)
+## Moderate (8 keywords)
 
 Mixed performance or context-dependent effectiveness.
 
@@ -477,6 +562,13 @@ Mixed performance or context-dependent effectiveness.
 - **Usage:** 1 used, 1 effective
 - **Context:** abstract forms, flat graphic output
 - **Notes:** Iter 3: effective for flatness but too aggressive - lost translucency and color drifted. Needs material descriptors alongside.
+
+### hairline-thin parallel lines
+- **Intended effect:** achieve ultra-fine line precision matching op-art reference
+- **Actual effect:** lines became finer than iter 1 but still not reference-level precision. Works directionally.
+- **Usage:** 2 used, 1 effective
+- **Context:** op-art / moire pattern contexts
+- **Notes:** Session 090060cf: improved line quality in iters 2-3 but couldn't achieve reference-level fineness through keywords alone.
 
 ### liquid
 - **Intended effect:** Flowing form
@@ -596,6 +688,13 @@ Low effectiveness or minimal impact on output.
 - **Context:** ICM photography, abstract blur
 - **Notes:** Used in iter 1 as motion-blurred. Completely ignored. Subject keywords dominated.
 
+### op-art moire
+- **Intended effect:** generate optical illusion interference patterns in linework
+- **Actual effect:** MJ understands the general concept but cannot produce true moire interference. Lines warp but don't create moire optical effects.
+- **Usage:** 3 used, 0 effective
+- **Context:** fine geometric pattern generation
+- **Notes:** Session 090060cf: attempted across all 7 iterations. MJ warps lines around sphere but never achieves actual moire interference.
+
 ### punk zine aesthetic
 - **Intended effect:** Printed punk feel and texture quality
 - **Actual effect:** Triggered collaged layout/composition behavior instead of just texture
@@ -605,9 +704,16 @@ Low effectiveness or minimal impact on output.
 
 ---
 
-## Counterproductive (42 keywords)
+## Counterproductive (22 keywords)
 
 Keywords that produce unwanted effects or conflict with intended output.
+
+### James Turrell inspired
+- **Intended effect:** contemplative luminous mood without gallery framing
+- **Actual effect:** triggers physical art object rendering even without gallery context words
+- **Usage:** 2 used, 0 effective
+- **Context:** abstract translucent forms
+- **Notes:** Used in 3B with gallery trap (0.77) and iteration 4 without gallery words (0.73). Both times increased 3D/physical quality.
 
 ### blush pink
 - **Intended effect:** warm pastel gradient color
@@ -672,6 +778,13 @@ Keywords that produce unwanted effects or conflict with intended output.
 - **Context:** gradient prompts with warm-dominant palette
 - **Notes:** Triggered fabric in warm-dominant palette (iter 4). But dusty pink worked in cool-dominant palette (iter 5).
 
+### flat vector illustration
+- **Intended effect:** force flat illustrative rendering instead of 3D
+- **Actual effect:** achieved flat rendering and fine lines but destroyed composition and spatial grounding — sphere became isolated floating graphic
+- **Usage:** 1 used, 0 effective
+- **Context:** when paired with sphere-on-plane compositions, prefix overrides spatial context
+- **Notes:** Session 090060cf iter 2: material +0.20 but composition -0.30, spatial -0.30. Net score regressed -0.04.
+
 ### gallery artwork
 - **Intended effect:** fine art presentation context
 - **Actual effect:** triggers meta-rendering: photo of painting on gallery wall
@@ -700,13 +813,6 @@ Keywords that produce unwanted effects or conflict with intended output.
 - **Context:** ICM photography
 - **Notes:** Used in iter 1. Not understood by MJ at all. Technical photography terms are ineffective.
 
-### James Turrell inspired
-- **Intended effect:** contemplative luminous mood without gallery framing
-- **Actual effect:** triggers physical art object rendering even without gallery context words
-- **Usage:** 2 used, 0 effective
-- **Context:** abstract translucent forms
-- **Notes:** Used in 3B with gallery trap (0.77) and iteration 4 without gallery words (0.73). Both times increased 3D/physical quality.
-
 ### peach
 - **Intended effect:** warm pastel gradient color
 - **Actual effect:** Triggers silk/satin fabric rendering in gradient context
@@ -728,12 +834,12 @@ Keywords that produce unwanted effects or conflict with intended output.
 - **Context:** gradient prompts
 - **Notes:** Used in 2 warm palettes (iters 2, 4), both triggered fabric. Gold strongly associated with luxe fabric.
 
-### subsurface scattering (counterproductive)
+### subsurface scattering (abstract context)
 - **Intended effect:** translucent glass material quality
 - **Actual effect:** forces photorealistic 3D rendering, overrides flat/graphic style keywords
 - **Usage:** 3 used, 0 effective
 - **Context:** abstract translucent forms
-- **Notes:** Physics-simulation keyword. Tested in iterations 1-2, removed in 3C which jumped from 0.77 to 0.83.
+- **Notes:** Physics-simulation keyword. Tested in iterations 1-2, removed in 3C which jumped from 0.77 to 0.83. See also excellent entry: works well for actual translucent materials like glass/wax/skin.
 
 ### swirling water vortex
 - **Intended effect:** Artistic water swirl pattern

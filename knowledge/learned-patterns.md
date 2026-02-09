@@ -1,7 +1,26 @@
 # Learned Patterns
 
 **Last Updated:** February 8, 2026
-**Total Active Patterns:** 82
+**Total Active Patterns:** 87
+
+## Summary
+
+| Category | Count | High | Medium | Low |
+|----------|-------|------|--------|-----|
+| color | 2 | 1 | 1 | 0 |
+| composition | 8 | 0 | 5 | 3 |
+| failure-mode | 14 | 0 | 3 | 11 |
+| lighting | 3 | 0 | 2 | 1 |
+| material | 7 | 0 | 4 | 3 |
+| parameters | 10 | 1 | 5 | 4 |
+| prompt-construction | 2 | 0 | 0 | 2 |
+| prompt-structure | 7 | 0 | 4 | 3 |
+| reference-usage | 1 | 0 | 0 | 1 |
+| sref | 9 | 1 | 6 | 2 |
+| style | 2 | 0 | 1 | 1 |
+| technique | 13 | 0 | 8 | 5 |
+| workflow | 9 | 1 | 4 | 4 |
+| **Total** | **87** | **4** | **43** | **40** |
 
 ---
 
@@ -82,7 +101,7 @@
 ---
 
 ### auto-composition-white-bg-art-context
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (2 tests) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (2 tests) | **ANTI-PATTERN**
 
 **Problem:** White background request is ignored when prompt contains art movement names, gallery references, or artist names — MJ renders dark/gallery backgrounds instead
 
@@ -131,7 +150,7 @@
 ---
 
 ### auto-color-swatch-triggers-paint
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** "Color swatch", "wash", and "matte finish" trigger physical paint/watercolor medium rendering in MJ V7, producing painted swatches on paper instead of clean digital gradients. All 4 images in the batch showed painted swatches with visible brush edges.
 
@@ -140,7 +159,7 @@
 ---
 
 ### auto-continuous-vs-isolated-forms
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** MJ V7 defaults to continuous all-over patterns when given pattern/swirl keywords — achieving isolated floating forms with void between them requires explicit structural description
 
@@ -149,7 +168,7 @@
 ---
 
 ### auto-defocused-triggers-lens-effects
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** "Defocused" triggers lens glow, aurora, and light flare effects in MJ V7 instead of producing smooth gradient softness. In a gradient context, 3 of 4 images showed lens artifacts instead of smooth transitions.
 
@@ -158,7 +177,7 @@
 ---
 
 ### auto-double-exposure-degrades-photo
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Adding "double exposure" to photorealistic street photography prompt shifted output from photography to artistic/abstract treatment
 
@@ -167,7 +186,7 @@
 ---
 
 ### auto-fine-brushstrokes-ignored
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** "Fine delicate brushstrokes" does not produce fine/thin lines in MJ V7 — MJ interprets brushstrokes as thick painted marks regardless of "fine" qualifier
 
@@ -176,7 +195,7 @@
 ---
 
 ### auto-icm-sref-ui-unreliable
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Using Midjourney UI style reference panel auto-selects multiple recent images from your library, contaminating the style transfer with unintended visual qualities
 
@@ -185,7 +204,7 @@
 ---
 
 ### auto-torn-paper-creates-frame
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** "Torn paper edge texture" is interpreted by MJ V7 as a literal torn paper page sitting on background, creating unwanted frame/border effect
 
@@ -194,7 +213,7 @@
 ---
 
 ### auto-water-vortex-triggers-3d-fluid
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Water/fluid motion keywords (swirling water vortex, fluid patterns) trigger 3D fluid simulation rendering in MJ V7, overriding painting/illustration style anchors like oil painting
 
@@ -203,7 +222,7 @@
 ---
 
 ### border-triggers-print-framing
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Combining painted white border or painted border with fine art print causes MJ to render the image as a physical print on paper/surface instead of generating the artwork itself. This is a variant of the Gallery Framing Trap.
 
@@ -211,8 +230,26 @@
 
 ---
 
+### ed01
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+
+**Problem:** MJ editor inpainting introduces environmental elements (walls, corners, surfaces) when regenerating backgrounds, even when the prompt specifies flat/seamless backdrop
+
+**Solution:** Editor inpainting is not suitable for creating flat seamless backgrounds. The preserved figure implies a physical space that MJ fills with environmental context. Use prompt-only approaches for flat backdrops instead.
+
+---
+
+### ed02
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+
+**Problem:** Editor edit creates grain/texture mismatch between preserved and regenerated areas when the original image had sref-assisted grain
+
+**Solution:** When using editor edit on sref-assisted images, the regenerated area will have different grain character than the preserved area. This is especially visible with heavy film grain. Consider whether the texture discontinuity is acceptable before using editor edit.
+
+---
+
 ### material-contrast-needs-physical-desc
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Describing 2D/3D material contrast as outline edge or separation does not produce visible contrast. MJ renders face and body in similar material quality despite keywords about different materials.
 
@@ -260,17 +297,6 @@
 
 ---
 
-### material-subsurface-scattering
-**Confidence:** `MEDIUM` | **Success Rate:** 0% (0 tests)
-
-**Problem:** The keyword "translucent" alone produces flat, unconvincing see-through materials
-
-**Solution:** Add "subsurface scattering" for convincing internal light behavior in translucent materials
-
-**Context:** CONDITIONAL: Subsurface scattering helps translucent materials WHEN photorealism is desired, but CONFLICTS with flat/graphic styles — see pat-physics-keywords-anchor-photorealism. Use only when photorealistic rendering is the goal.
-
----
-
 ### pat-physics-keywords-anchor-photorealism
 **Confidence:** `MEDIUM` | **Success Rate:** 67% (4 tests)
 
@@ -279,6 +305,17 @@
 **Solution:** Remove LITERAL MATERIAL keywords (glass, polished, octane, chrome) but keep PERCEPTUAL QUALITY keywords (translucent, luminous, glowing). Material-literal keywords sit above style keywords in V7 prompt hierarchy. For graphic/flat styles, use "graphic quality" and medium anchors instead. When photorealism IS the goal, material keywords are beneficial.
 
 **Context:** CONDITIONAL: This pattern applies when graphic/flat/illustrated output is intended. When photorealism IS the goal, subsurface scattering is beneficial — see material-subsurface-scattering. | CROSS-SESSION: V7 prompt hierarchy confirmed across 6 sessions: material-literal > style-abstract > perceptual-quality. Perceptual words do not trigger photorealism.
+
+---
+
+### material-subsurface-scattering
+**Confidence:** `MEDIUM` | **Success Rate:** 0% (0 tests)
+
+**Problem:** The keyword "translucent" alone produces flat, unconvincing see-through materials
+
+**Solution:** Add "subsurface scattering" for convincing internal light behavior in translucent materials
+
+**Context:** CONDITIONAL: Subsurface scattering helps translucent materials WHEN photorealism is desired, but CONFLICTS with flat/graphic styles — see pat-physics-keywords-anchor-photorealism. Use only when photorealistic rendering is the goal.
 
 ---
 
@@ -320,6 +357,24 @@
 
 ## parameters
 
+### auto-icm-s100-raw-dreamy
+**Confidence:** `HIGH` | **Success Rate:** 100% (5 tests)
+
+**Problem:** Default --s values or lower stylize with --style raw do not produce sufficiently dreamy/ethereal quality for abstract blur photography
+
+**Solution:** Use --s 100 combined with --style raw for dreamy abstract blur photography. This combination produced the highest-scoring batches in the ICM session (0.83, 0.89, 0.895 averages). The higher stylize adds aesthetic dreaminess while raw prevents MJ from over-interpreting the prompt.
+
+---
+
+### 665ac2ad
+**Confidence:** `MEDIUM` | **Success Rate:** 75% (1 test)
+
+**Problem:** Expanded --no list reduces sref text transfer to ~25%
+
+**Solution:** Add "text, words, writing, typography, lettering, font, characters" to --no when sref references contain text overlays. Not 100% effective but significantly reduces incidence.
+
+---
+
 ### auto-stylize-gradient-smoothness
 **Confidence:** `MEDIUM` | **Success Rate:** 50% (4 tests)
 
@@ -344,15 +399,6 @@
 **Problem:** --cref (character reference) was removed in V7
 
 **Solution:** Use --oref instead of --cref for character/object reference in V7
-
----
-
-### 665ac2ad
-**Confidence:** `MEDIUM` | **Success Rate:** 75% (1 test)
-
-**Problem:** Expanded --no list reduces sref text transfer to ~25%
-
-**Solution:** Add "text, words, writing, typography, lettering, font, characters" to --no when sref references contain text overlays. Not 100% effective but significantly reduces incidence.
 
 ---
 
@@ -383,16 +429,47 @@
 
 ---
 
-### auto-icm-s100-raw-dreamy
-**Confidence:** `HIGH` | **Success Rate:** 100% (5 tests)
+### raw-sref-source-dependent
+**Confidence:** `LOW` | **Success Rate:** 50% (2 tests)
 
-**Problem:** Default --s values or lower stylize with --style raw do not produce sufficiently dreamy/ethereal quality for abstract blur photography
+**Problem:** --style raw + --sref interaction produces opposite results depending on the sref source image. Raw blocks MJ's interpretive layer, which hurts when the sref needs interpretation (professional photo to illustration) but helps when the sref already has the right qualities (self-generated illustration).
 
-**Solution:** Use --s 100 combined with --style raw for dreamy abstract blur photography. This combination produced the highest-scoring batches in the ICM session (0.83, 0.89, 0.895 averages). The higher stylize adds aesthetic dreaminess while raw prevents MJ from over-interpreting the prompt.
+**Solution:** Match --style raw usage to sref source type. If sref is a professional/photographic image that needs MJ to reinterpret it as illustration, OMIT --style raw. If sref is already in the target style (e.g., your own generated output), USE --style raw to prevent MJ from adding its own interpretation on top.
+
+---
+
+## prompt-construction
+
+### product-photo-pattern-transfer
+**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+
+**Problem:** Applying artistic session patterns to commercial product photography
+
+**Solution:** Patterns from artistic sessions (explicit lighting direction, material-specific adjectives like subsurface scattering, mirror finish) transfer directly to product photography. Achieved 0.879 batch avg on first attempt.
+
+---
+
+### rim-light-intensity
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test)
+
+**Problem:** Rim light renders subtle despite explicit mention in prompt
+
+**Solution:** Simple "rim light on [subject] edges" produces visible but weak rim. Likely needs intensity modifiers like "strong" or "bright" to increase prominence.
 
 ---
 
 ## prompt-structure
+
+### 58466c50
+**Confidence:** `MEDIUM` | **Success Rate:** 50% (4 tests)
+
+**Problem:** "fine art print" causes grain/stipple in ~50% of images
+
+**Solution:** Use "compressed depth" + "flat color zones" instead of "fine art print" for achieving flat/2D appearance without grain side effects.
+
+**Context:** CONTRASTIVE: Safe alone. Triggers Gallery Framing Trap with border/frame keywords (add "border, frame" to --no). Introduces grain/stipple ~50% of time. Safer alternative: "spray paint airbrush illustration".
+
+---
 
 ### prompt-frontload-subject
 **Confidence:** `MEDIUM` | **Success Rate:** 0% (0 tests)
@@ -421,19 +498,8 @@
 
 ---
 
-### 58466c50
-**Confidence:** `MEDIUM` | **Success Rate:** 50% (4 tests)
-
-**Problem:** "fine art print" causes grain/stipple in ~50% of images
-
-**Solution:** Use "compressed depth" + "flat color zones" instead of "fine art print" for achieving flat/2D appearance without grain side effects.
-
-**Context:** CONTRASTIVE: Safe alone. Triggers Gallery Framing Trap with border/frame keywords (add "border, frame" to --no). Introduces grain/stipple ~50% of time. Safer alternative: "spray paint airbrush illustration".
-
----
-
 ### auto-prompt-structure-dont-embellish-optimized
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Adding mood keywords, artist references, or stylistic embellishments to an already-optimized prompt destabilizes it and causes score regression
 
@@ -442,7 +508,7 @@
 ---
 
 ### pat-medium-first-loses-detail
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Leading with abstract medium description (geometric abstraction, concentric rounded squares) and omitting specific material/light descriptors produces flat but lifeless results lacking luminosity
 
@@ -451,7 +517,7 @@
 ---
 
 ### prompt-expansion-dilution
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** When expanding a minimal prompt to full composition, specific details (like eye characteristics) get lost because they are pushed further back. V7 weights beginning of prompt most heavily, so expansion dilutes priority details.
 
@@ -468,6 +534,17 @@
 
 ---
 
+## reference-usage
+
+### oref-env-transfer
+**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+
+**Problem:** Need to maintain object identity when changing environment/context
+
+**Solution:** --oref with CDN URL preserves object shape, material, color, and proportions while allowing completely different lighting/environment. The prompt controls environment freely.
+
+---
+
 ## sref
 
 ### sref-url-reuse
@@ -476,15 +553,6 @@
 **Problem:** Re-uploading reference images via MJ UI for each iteration is slow and unreliable
 
 **Solution:** After first UI-based sref upload, capture the CDN URL (s.mj.run/...) from job metadata and reuse it with --sref URL in subsequent prompts directly in the text input.
-
----
-
-### 75c81368
-**Confidence:** `MEDIUM` | **Success Rate:** 100% (2 tests)
-
-**Problem:** Style codes produce higher first-iteration scores than prompt-only or image-sref approaches
-
-**Solution:** When the target aesthetic matches a known MJ style code, use --sref <code> instead of prompt-only. Combine with a simple, focused prompt covering subject/scene while the code handles aesthetic. Expect 0.89+ batch avg on first iteration vs 0.50-0.70 for prompt-only.
 
 ---
 
@@ -515,8 +583,17 @@
 
 ---
 
+### 75c81368
+**Confidence:** `MEDIUM` | **Success Rate:** 100% (2 tests)
+
+**Problem:** Style codes produce higher first-iteration scores than prompt-only or image-sref approaches
+
+**Solution:** When the target aesthetic matches a known MJ style code, use --sref <code> instead of prompt-only. Combine with a simple, focused prompt covering subject/scene while the code handles aesthetic. Expect 0.89+ batch avg on first iteration vs 0.50-0.70 for prompt-only.
+
+---
+
 ### reflect-sref-breaks-ceiling
-**Confidence:** `MEDIUM` | **Success Rate:** 100% (1 test)
+**Confidence:** `MEDIUM` | **Success Rate:** 100% (2 tests)
 
 **Problem:** Complex prompt-only recreations hit a ceiling around 0.78-0.82 that no amount of keyword refinement can break through.
 
@@ -534,11 +611,20 @@
 ---
 
 ### 2b436354
-**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+**Confidence:** `LOW` | **Success Rate:** 100% (2 tests)
 
 **Problem:** Sref reads design context holistically — text overlays signal high production value
 
 **Solution:** When reference images have text overlays, MJ interprets them as higher production value. Removing text may reduce perceived quality. Consider hybrid approach or accepting minor text artifacts.
+
+---
+
+### self-sref-technique
+**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+
+**Problem:** When the original reference image pushes MJ toward the wrong style (e.g., album cover production polish to photorealism), using it as --sref transfers unwanted qualities instead of the target aesthetic.
+
+**Solution:** Use your own best generated output as --sref instead of the original reference. Generate 2-3 prompt-only iterations to establish the right direction, pick the best image, then feed it back as --sref. This transfers the exact qualities you achieved (color palette, line style, rendering mode) without the original's production context contamination.
 
 ---
 
@@ -554,7 +640,7 @@
 ---
 
 ### auto-style-artist-ref-triggers-3d
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (2 tests) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (2 tests) | **ANTI-PATTERN**
 
 **Problem:** Artist reference keywords (e.g., 'James Turrell inspired') trigger physical art installation or 3D object rendering in MJ V7, even WITHOUT gallery/exhibition context words
 
@@ -647,6 +733,15 @@
 
 ---
 
+### ed03
+**Confidence:** `MEDIUM` | **Success Rate:** 33% (3 tests)
+
+**Problem:** --style raw increases grain texture fidelity but darkens the overall image. Removing --raw brightens the image but reduces grain quality.
+
+**Solution:** When grain and lighting are both critical, this is a fundamental tradeoff with no single-prompt solution. Best approach: accept the balanced result (with --raw at moderate sref weight) rather than trying to maximize both. Alternatively, use editor edit to fix lighting regionally, accepting some texture mismatch.
+
+---
+
 ### auto-color-harmonious-surreal
 **Confidence:** `LOW` | **Success Rate:** 50% (4 tests)
 
@@ -656,21 +751,21 @@
 
 ---
 
-### auto-pure-black-canvas-contrast
-**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
-
-**Problem:** Light-on-dark contrast structure is lost when using color-based descriptions (teal cyan on dark slate blue) without explicitly specifying the ground as pure black
-
-**Solution:** Use "pure black canvas" or "against dark void" + "high contrast linework" to establish the figure-ground relationship. This produced a +0.17 batch average improvement. Without explicit black ground keywords, lines blend into a uniform gradient.
-
----
-
 ### auto-levitation-strong-language
 **Confidence:** `LOW` | **Success Rate:** 50% (2 tests)
 
 **Problem:** Subtle levitation/floating keywords like "hovering slightly above" are ignored by MJ V7 — objects remain grounded
 
 **Solution:** Use strong levitation language: "levitating above the [surface]", "suspended in air with a visible gap and shadow on the ground beneath it". The combination of levitating + suspended + visible gap + shadow achieved floating in 3/4 images after "hovering slightly" achieved 0/4.
+
+---
+
+### auto-pure-black-canvas-contrast
+**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+
+**Problem:** Light-on-dark contrast structure is lost when using color-based descriptions (teal cyan on dark slate blue) without explicitly specifying the ground as pure black
+
+**Solution:** Use "pure black canvas" or "against dark void" + "high contrast linework" to establish the figure-ground relationship. This produced a +0.17 batch average improvement. Without explicit black ground keywords, lines blend into a uniform gradient.
 
 ---
 
@@ -715,7 +810,7 @@
 ---
 
 ### meta-capability-check
-⚠️ **Confidence:** `MEDIUM` | **Success Rate:** 0% (5 tests) | **ANTI-PATTERN**
+**Confidence:** `MEDIUM` | **Success Rate:** 0% (5 tests) | **ANTI-PATTERN**
 
 **Problem:** Sessions attempting effects MJ fundamentally cannot produce (ICM motion blur, 2D/3D material contrast within single figure, fine linework control) consume 7+ iterations then get abandoned
 
@@ -733,7 +828,7 @@
 ---
 
 ### reflect-prompt-edit-ceiling
-⚠️ **Confidence:** `MEDIUM` | **Success Rate:** 0% (10 tests) | **ANTI-PATTERN**
+**Confidence:** `MEDIUM` | **Success Rate:** 0% (10 tests) | **ANTI-PATTERN**
 
 **Problem:** Prompt edits after iteration 6 have 0% success rate across all sessions. Sessions plateau and incremental keyword changes stop producing improvement.
 
@@ -750,8 +845,26 @@
 
 ---
 
+### illustration-prompt-ceiling
+**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+
+**Problem:** Complex illustration styles with precise linework, specific color palettes, and compositional elements hit a lower prompt-only ceiling (~0.65-0.70) than photographic recreations (~0.78-0.82). Words cannot hold all 7 visual dimensions simultaneously for illustration — fixing one (e.g., line fineness) breaks another (e.g., composition/ground plane).
+
+**Solution:** For complex illustration targets, expect prompt-only ceiling around 0.65-0.70 (vs 0.78-0.82 for photographic). Plan to introduce --sref earlier (after 2-3 prompt iterations rather than 5+). Use the prompt-only phase to establish the right direction for self-sref, not to reach final quality.
+
+---
+
+### oref-cdn-url-workflow
+**Confidence:** `LOW` | **Success Rate:** 100% (1 test)
+
+**Problem:** Need to use --oref with a previously generated MJ image without re-uploading via UI
+
+**Solution:** Use the CDN URL directly: https://cdn.midjourney.com/{job-id}/{index}_{index}.jpeg — MJ accepts it and converts to s.mj.run shortlink automatically. No UI upload needed. Object identity (shape, color, material, proportions) preserved across completely different environments.
+
+---
+
 ### 8c8ee1ec-64e2-4d41-0449-8791d9f2223a
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (2 tests) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (2 tests) | **ANTI-PATTERN**
 
 **Problem:** Adding keywords to fix one visual element (e.g., levitation language) may degrade compliance on other positional elements (e.g., doorway position regressed from 3/4 correct to 2/4 correct)
 
@@ -760,7 +873,7 @@
 ---
 
 ### auto-vary-subtle-cant-fix-prompt
-⚠️ **Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
+**Confidence:** `LOW` | **Success Rate:** 0% (1 test) | **ANTI-PATTERN**
 
 **Problem:** Vary Subtle preserves overall image quality and composition but cannot fix issues that originate in the prompt text (e.g., wrong element position, missing features)
 

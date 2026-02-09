@@ -2,7 +2,7 @@
 
 A Claude Code skill that iterates on Midjourney prompts, scores results on 7 dimensions, and builds a knowledge base of what actually works. Each session feeds a learning loop — patterns are extracted from successes and failures, keywords are ranked by effectiveness, and failure modes are cataloged. Over time, first-attempt quality improves as the system applies accumulated craft knowledge.
 
-> **15 sessions, 79 iterations, 88 patterns, 106 tracked keywords** — and growing.
+> **17 sessions, 90 iterations, 91 patterns, 121 tracked keywords** — and growing.
 
 ## See It In Action
 
@@ -61,16 +61,125 @@ The session produced 3 new patterns added to the database:
 
 ---
 
+### Album Cover Aesthetic — Self-Referencing Sref Breakthrough
+
+**Goal:** Reproduce the Tame Impala *Currents* album cover aesthetic — a chrome sphere on a plane of warped parallel lines with op-art moiré, deep amethyst purple palette, and a bold coral-to-orange diagonal streak. The style involves precise mathematical linework, specific color relationships, and compositional choices that are hard to describe in words alone. This session was designed to demonstrate that prompt-only engineering has a ceiling, and `--sref` with tuned parameters breaks through it.
+
+| Reference | Iter 1 — First Attempt (0.65) | Iter 3 — Prompt Ceiling (0.69) | Iter 4 — Sref Fail (0.55) | Iter 6 — Breakthrough (0.75) |
+|:-:|:-:|:-:|:-:|:-:|
+| ![Reference](docs/examples/album-cover/reference.jpg) | ![Iter 1](docs/examples/album-cover/iter-01-best.png) | ![Iter 3](docs/examples/album-cover/iter-03-best.png) | ![Iter 4](docs/examples/album-cover/iter-04-sref-fail.png) | ![Iter 6](docs/examples/album-cover/iter-06-best.png) |
+
+#### Phase 1: Prompt-only (iter 1-3) — establishing the ceiling
+
+The system queried the knowledge base and constructed a prompt using effective keywords: "op-art moiré," "hairline-thin parallel lines," "deep amethyst purple," `--style raw` for precision. Three iterations of refinement:
+
+- **Iter 1 (0.60):** Core concept captured — sphere, lines, streak — but lines too thick, color too red-orange, too much 3D landscape depth instead of flat illustration.
+- **Iter 2 (0.56):** Added "flat vector illustration" and "ultra-fine hairline-thin" — lines dramatically finer (+0.20 material) and purple more dominant (+0.10 color), but MJ lost the ground plane entirely (-0.30 composition). "Flat vector" + "sphere" = isolated globe floating in space.
+- **Iter 3 (0.67):** Merged best of both. Kept "hairline-thin" for fineness, restored ground plane with "resting on an infinite flat plane" + "receding to a distant horizon." **Prompt-only ceiling established at 0.67.**
+
+The problem: every word added to fix one dimension destabilized another. Fixing line fineness broke composition. Adding spatial context diluted the color palette. Words alone couldn't hold all 7 dimensions simultaneously.
+
+#### Phase 2: Sref experiments (iter 4-7) — failure, pivot, breakthrough
+
+**Iter 4 — Album cover as sref (0.53):** Uploaded the Currents album cover as `--sref`, added `--sw 100`. **Major regression.** MJ produced photorealistic 3D renders — chrome balls on marble surfaces. The album cover's professional production quality (text overlays, polish, commercial packaging) signaled "high production value" to MJ, which it interpreted as photorealism. The illustration content was ignored.
+
+**Iter 5 — Higher sw (0.47):** Increased `--sw 200` hoping to force more style transfer. Even worse — higher style weight amplified the wrong signal.
+
+**Iter 6 — Self-referencing sref (0.75): THE BREAKTHROUGH.** Instead of the album cover, the system used its own best output (iter 3 img 3) as `--sref`. Clicked "Style" on the image detail page to set it as a style reference. Combined with `--style raw` and `--sw 100`.
+
+Result: **All 7 dimensions improved simultaneously.** Batch average jumped from 0.67 to 0.72, best image hit 0.75. The self-generated sref transferred exactly the right qualities — illustration style, line character, color palette — because it already had them.
+
+**Iter 7 — Vary Subtle (0.73):** Confirmed the plateau. Vary Subtle maintained quality but didn't push further. Session closed.
+
+| Phase | Iters | Best Score | Batch Avg | What It Proved |
+|-------|-------|-----------|-----------|----------------|
+| Prompt-only | 1-3 | 0.69 | 0.67 | Ceiling — words can't hold all 7 dimensions |
+| Album cover sref | 4-5 | 0.55 | 0.50 | Professional images trigger photorealism trap |
+| **Self-referencing sref** | 6-7 | **0.75** | **0.72** | Use your own best output as sref |
+
+#### The key insight: sref source matters more than sref weight
+
+The album cover and the best prompt-only output depicted the *same aesthetic*. But MJ read them completely differently:
+
+- **Album cover** → "professional commercial product" → photorealism
+- **Own generated output** → "illustration with these specific qualities" → illustration enhanced
+
+`--sw` amplified whatever the source signaled. Higher weight on a bad source made things worse. The fix wasn't parameter tuning — it was changing the source.
+
+#### Patterns extracted
+
+The session produced 4 new patterns added to the database:
+
+- **Self-referencing sref** (low confidence, 1 session): When the original reference pushes MJ toward the wrong style, use your own best generated output as `--sref` instead. It transfers exactly the qualities you've already achieved.
+- **Professional image sref trap** (low confidence, 1 session): Album covers, magazine spreads, and other commercially-produced images signal "high production value" → photorealism, even when their visual content is illustration or graphic design.
+- **`--style raw` + `--sref` interaction is source-dependent** (low confidence, 1 session): `--raw` blocks MJ's interpretive layer. This hurts when sref needs interpretation (album cover → lost the illustration style) but helps when sref already has the right qualities (self-reference → blocked photorealistic tendencies).
+- **Prompt-only ceiling for complex illustration** (low confidence, 1 session): Styles requiring precision across multiple dimensions (linework, color, composition) hit ~0.65-0.70 with words alone. Each keyword addition destabilizes other dimensions.
+
+**Final result:** Session closed at **0.75** (iter 6, img-3). The self-referencing sref technique — a feedback loop where your own best output becomes the style reference for the next attempt — was the session's primary contribution to the knowledge base.
+
+---
+
+### Style Code Exploration — Same Prompt, Different Worlds
+
+**Goal:** Demonstrate how `--sref random` and style code blending transform a single portrait prompt into radically different aesthetics. The prompt stays constant — the style code is the only variable. This session is about discovery and cataloging, not iterative refinement.
+
+| Code `4255542556` | Code `3738472169` | Code `3406712833` | Blend `4255::2 3738::1` |
+|:-:|:-:|:-:|:-:|
+| ![Dark graphic novel](docs/examples/portrait-codes/code-4255542556.png) | ![Fashion editorial](docs/examples/portrait-codes/code-3738472169.png) | ![B&W gothic](docs/examples/portrait-codes/code-3406712833.png) | ![Hybrid blend](docs/examples/portrait-codes/blend-result.png) |
+| Dark graphic novel | Bright fashion editorial | High-contrast B&W gothic | Illustrated-photographic hybrid |
+
+**The prompt (identical across all 4):**
+```
+Cinematic close-up portrait of a woman with sharp cheekbones, dramatic side lighting,
+looking directly at camera, moody atmosphere --ar 2:3 --sref [code] --stylize 75
+```
+
+#### How `--sref random` works
+
+Each generation with `--sref random` assigns a unique numeric style code. MJ draws from its internal style space — you don't choose the aesthetic, you discover it. The code is permanent and reusable: once you find one you like, you can apply it to any future prompt.
+
+Three random rolls produced three completely different aesthetics from the same words:
+
+| Code | Aesthetic | Key Characteristics |
+|------|-----------|-------------------|
+| `4255542556` | Dark graphic novel | Heavy ink outlines, desaturated palette, comic-book shading, visible crosshatching |
+| `3738472169` | Fashion editorial | Vivid teal-orange color grade, luminous skin, editorial lighting, magazine quality |
+| `3406712833` | B&W gothic film | High-contrast monochrome, heavy film grain, noir atmosphere, textured grain overlay |
+
+#### Blending codes with weights
+
+Style codes can be combined with weighted ratios. `--sref 4255542556::2 3738472169::1` blends the graphic novel aesthetic (2x weight) with the fashion editorial look (1x weight):
+
+- The ink-line quality from the graphic novel code survived but softened
+- The fashion editorial's teal-orange tones warmed the palette
+- Skin rendering split the difference — more detailed than pure comic art, more stylized than pure editorial
+- The result was a hybrid that neither code would produce alone
+
+#### What the system cataloged
+
+Each style code was recorded in the keyword effectiveness database with its aesthetic profile, suggested use cases, and `--sw` recommendations. Future sessions can query this catalog:
+
+```sql
+SELECT keyword, actual_effect, notes FROM keyword_effectiveness
+WHERE context = 'style-code' AND effectiveness = 'excellent'
+```
+
+This is a different kind of learning — not "which keywords work" but "which aesthetic spaces exist." The system builds a palette of reusable style codes alongside its keyword and pattern knowledge, giving it three tools for prompt construction: words, patterns, and codes.
+
+**Final result:** 4 iterations, 3 new style codes cataloged, 1 blend tested. No single "best score" — each code produced a valid interpretation. The session's value was breadth of discovery, not depth of refinement.
+
+---
+
 ## What It Learns
 
-Real numbers from the database after 15 sessions:
+Real numbers from the database after 17 sessions:
 
 | What | Count | How It's Used |
 |------|-------|---------------|
-| **Patterns** | 88 across 12 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
-| **Keywords** | 106 tracked | Ranked by effectiveness. Bad keywords actively avoided |
-| **Failure modes** | 16 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
-| **Action decisions** | 79 logged | Which action (Vary, prompt edit, sref, editor) works best for which gap type |
+| **Patterns** | 91 across 13 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
+| **Keywords** | 121 tracked | Ranked by effectiveness. Bad keywords actively avoided |
+| **Failure modes** | 15 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
+| **Action decisions** | 90 logged | Which action (Vary, prompt edit, sref, editor) works best for which gap type |
 
 <details>
 <summary>Example pattern card (from database)</summary>
@@ -99,7 +208,7 @@ Evidence: Session 17bbeab3 — 3 A/B comparisons across iter 9-14.
 
 ```
 You describe what you want
-  → System queries 88 patterns + 106 keywords for relevant knowledge
+  → System queries 91 patterns + 121 keywords for relevant knowledge
     → Constructs an informed prompt (applying known good keywords, avoiding known bad ones)
       → Submits to Midjourney via browser automation (or you paste manually)
         → Scores the output on 7 dimensions (subject, lighting, color, mood, composition, material, spatial)
