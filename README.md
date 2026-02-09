@@ -4,6 +4,55 @@ A Claude Code skill that iterates on Midjourney prompts, scores results on 7 dim
 
 > **18 sessions, 91 iterations, 94 patterns, 121 tracked keywords** — and growing.
 
+## How It Works
+
+```
+You describe what you want
+  → System queries 94 patterns + 121 keywords for relevant knowledge
+    → Constructs an informed prompt (applying known good keywords, avoiding known bad ones)
+      → Submits to Midjourney via browser automation (or you paste manually)
+        → Scores the output on 7 dimensions (subject, lighting, color, mood, composition, material, spatial)
+          → Gap analysis determines: Vary Subtle, Vary Strong, prompt rewrite, sref, or editor edit?
+            → Patterns extracted from what worked and what didn't
+              → Knowledge compounds across sessions
+```
+
+Scoring uses 7 standard dimensions evaluated against the reference image or session intent. All 7 are always scored (1.0 for "not applicable") to ensure cross-session comparability. Scores are presented as preliminary and validated with the user — the system knows its spatial relationship assessment can be unreliable.
+
+## What It Learns
+
+Real numbers from the database after 18 sessions:
+
+| What | Count | How It's Used |
+|------|-------|---------------|
+| **Patterns** | 94 across 14 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
+| **Keywords** | 121 tracked | Ranked by effectiveness. Bad keywords actively avoided |
+| **Failure modes** | 15 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
+| **Action decisions** | 91 logged | Which action (Vary, prompt edit, sref, editor, animate) works best for which gap type |
+
+<details>
+<summary>Example pattern card (from database)</summary>
+
+```
+Pattern: raw-grain-lighting-tradeoff
+Category: technique | Confidence: medium | Success rate: 33% (1/3)
+
+Problem: Need both heavy film grain and flat even lighting in the same image.
+         --style raw increases grain but darkens. Removing raw brightens but
+         reduces grain.
+
+Solution: Accept the balanced result (with --raw at moderate sref weight)
+          rather than trying to maximize both. Alternatively, use editor edit
+          to fix lighting regionally, accepting some texture mismatch.
+
+Evidence: Session 17bbeab3 — 3 A/B comparisons across iter 9-14.
+          raw+grain sref: grain 0.93, lighting 0.74
+          no raw: grain 0.84, lighting 0.85
+          balanced: grain 0.85, lighting 0.84 (best overall at 0.90)
+```
+
+</details>
+
 ## See It In Action
 
 ### Surreal B&W Film Portrait — Tradeoff Discovery
@@ -222,55 +271,6 @@ Three patterns were extracted and added to the database — the beginning of an 
 **Other discoveries:** Animation generates 4 video variations (index 0-3), costs ~8x a regular generation, and produces 5-second clips. The video polling workflow (navigate to job page, check for `<video>` element) was documented in `rules/auto-core-workflows.md` for future sessions.
 
 ---
-
-## What It Learns
-
-Real numbers from the database after 18 sessions:
-
-| What | Count | How It's Used |
-|------|-------|---------------|
-| **Patterns** | 94 across 14 categories | Applied to new prompts before generation. Each has a problem/solution pair with evidence chain |
-| **Keywords** | 121 tracked | Ranked by effectiveness. Bad keywords actively avoided |
-| **Failure modes** | 15 cataloged | Diagnostic trees organized by scoring dimension. System checks for known traps before constructing prompts |
-| **Action decisions** | 91 logged | Which action (Vary, prompt edit, sref, editor, animate) works best for which gap type |
-
-<details>
-<summary>Example pattern card (from database)</summary>
-
-```
-Pattern: raw-grain-lighting-tradeoff
-Category: technique | Confidence: medium | Success rate: 33% (1/3)
-
-Problem: Need both heavy film grain and flat even lighting in the same image.
-         --style raw increases grain but darkens. Removing raw brightens but
-         reduces grain.
-
-Solution: Accept the balanced result (with --raw at moderate sref weight)
-          rather than trying to maximize both. Alternatively, use editor edit
-          to fix lighting regionally, accepting some texture mismatch.
-
-Evidence: Session 17bbeab3 — 3 A/B comparisons across iter 9-14.
-          raw+grain sref: grain 0.93, lighting 0.74
-          no raw: grain 0.84, lighting 0.85
-          balanced: grain 0.85, lighting 0.84 (best overall at 0.90)
-```
-
-</details>
-
-## How It Works
-
-```
-You describe what you want
-  → System queries 94 patterns + 121 keywords for relevant knowledge
-    → Constructs an informed prompt (applying known good keywords, avoiding known bad ones)
-      → Submits to Midjourney via browser automation (or you paste manually)
-        → Scores the output on 7 dimensions (subject, lighting, color, mood, composition, material, spatial)
-          → Gap analysis determines: Vary Subtle, Vary Strong, prompt rewrite, sref, or editor edit?
-            → Patterns extracted from what worked and what didn't
-              → Knowledge compounds across sessions
-```
-
-Scoring uses 7 standard dimensions evaluated against the reference image or session intent. All 7 are always scored (1.0 for "not applicable") to ensure cross-session comparability. Scores are presented as preliminary and validated with the user — the system knows its spatial relationship assessment can be unreliable.
 
 ## Getting Started
 
