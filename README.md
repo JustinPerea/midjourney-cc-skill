@@ -6,18 +6,30 @@ A Claude Code skill that iterates on Midjourney prompts, scores results on 7 dim
 
 ## How It Works
 
-```
-You describe what you want
-  → System queries 94 patterns + 121 keywords for relevant knowledge
-    → Constructs an informed prompt (applying known good keywords, avoiding known bad ones)
-      → Submits to Midjourney via browser automation (or you paste manually)
-        → Scores the output on 7 dimensions (subject, lighting, color, mood, composition, material, spatial)
-          → Gap analysis determines: Vary Subtle, Vary Strong, prompt rewrite, sref, or editor edit?
-            → Patterns extracted from what worked and what didn't
-              → Knowledge compounds across sessions
-```
+### 1. Analyze the target
 
-Scoring uses 7 standard dimensions evaluated against the reference image or session intent. All 7 are always scored (1.0 for "not applicable") to ensure cross-session comparability. Scores are presented as preliminary and validated with the user — the system knows its spatial relationship assessment can be unreliable.
+You provide a reference image, a text description, or both. The system breaks down the target into 7 visual dimensions — subject, lighting, colors, material/texture, composition, mood, and rendering style — and maps each quality to prompt language. When multiple reference images are provided, it identifies which qualities are shared across all of them (the target aesthetic) vs. which vary (subject-specific, not style-defining).
+
+### 2. Choose an approach
+
+Not every session uses the same tools. The system evaluates the target and recommends one of several approaches:
+
+- **Prompt-only** — Reverse-engineer the look through keywords alone. Harder, but produces transferable knowledge that works without any reference.
+- **`--sref` (style reference)** — Upload a reference image or use a style code to transfer aesthetic qualities MJ can't easily get from words: specific color grades, grain character, rendering style.
+- **`--sref` with style codes** — Apply curated aesthetics from MJ's style library using numeric codes. Supports blending multiple codes with weighted ratios.
+- **Hybrid** — Use `--sref` for the hardest-to-describe qualities while prompting explicitly for everything else. The system tracks which aspects came from the reference vs. the prompt.
+
+### 3. Apply accumulated knowledge
+
+Before writing a single word of the prompt, the system queries its database — 94 patterns, 121 tracked keywords, 15 cataloged failure modes — and scores each for relevance to the current task. If internal knowledge coverage is low (novel subject or technique), it automatically runs community research to fill gaps, clearly labeling findings as unvalidated.
+
+### 4. Generate, score, iterate
+
+The prompt is submitted to Midjourney via browser automation (or pasted manually). All 4 output images are scored on 7 dimensions against the reference or session intent, and gap analysis determines the next action: Vary Subtle, Vary Strong, prompt rewrite, add `--sref`, editor inpainting, or animate. Each iteration is logged with what changed and what effect it had.
+
+### 5. Extract and compound
+
+When a session closes, the system extracts patterns from what worked and what didn't. Keyword effectiveness is updated, new failure modes are cataloged, and action decision data accumulates. The next session starts with everything the previous sessions learned.
 
 ## What It Learns
 
