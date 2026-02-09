@@ -1,10 +1,14 @@
 # Midjourney Prompt Learning System
 
-A Claude Code skill that iterates on Midjourney prompts, scores results on 7 dimensions, and builds a knowledge base of what actually works. Each session feeds a learning loop — patterns are extracted from successes and failures, keywords are ranked by effectiveness, and failure modes are cataloged. Over time, first-attempt quality improves as the system applies accumulated craft knowledge.
+A Claude Code skill that teaches itself Midjourney prompt engineering. It starts with a structured understanding of Midjourney built from the [official documentation](https://docs.midjourney.com) — V7 parameters, prompt syntax, reference systems (`--sref`, `--oref`), style codes, and a visual-quality-to-keyword translation framework. Then it learns by doing: each session feeds a loop where patterns are extracted from successes and failures, keywords are ranked by effectiveness, and failure modes are cataloged. Over time, first-attempt quality improves as the system applies accumulated craft knowledge on top of its documentation foundation.
 
 > **18 sessions, 91 iterations, 94 patterns, 121 tracked keywords** — and growing.
 
 ## How It Works
+
+### 0. Start with documentation knowledge
+
+The system ships with static knowledge files distilled from Midjourney's official docs: every V7 parameter and its behavior, prompt structure rules, reference system syntax (`--sref`, `--oref`, `--iref`), style codes, and translation tables that map visual qualities (e.g., "light from behind subject") to effective prompt keywords (e.g., "backlighting, rim light, silhouette"). This is the baseline — the system understands Midjourney's tools before it ever generates an image.
 
 ### 1. Analyze the target
 
