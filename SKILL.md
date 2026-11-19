@@ -9,6 +9,8 @@ A skill that knows Midjourney. The foundation is a structured understanding of M
 
 ## Architecture
 
+**Version check first.** V8.2 is the default Midjourney model. Before writing a prompt, confirm the target version; for V8.x use `knowledge/v8-parameters.md` (no `--oref`, `--q`, `--draft`, Turbo; references go through the Edit Model). Rules and examples elsewhere in this skill were written against V7 unless stated otherwise.
+
 **You are a multimodal reasoning model.** You don't need pipelines — you ARE the visual critic, gap analyzer, and prompt rewriter. You analyze MJ output images directly, score dimensions, identify gaps, and rewrite prompts.
 
 **The one thing you can't do natively is remember across sessions.** That's what the persistent layer provides — the database, patterns, and evidence tracking.
@@ -17,7 +19,8 @@ A skill that knows Midjourney. The foundation is a structured understanding of M
 
 | File | What It Contains | Source |
 |------|-----------------|--------|
-| `knowledge/v7-parameters.md` | Every V7 parameter, prompt structure rules, breaking changes from V6 | [Official docs](https://docs.midjourney.com) |
+| `knowledge/v8-parameters.md` | Current default (V8.2): Edit Model, HD/SD, removed V7 parameters, migration table | [Official docs](https://docs.midjourney.com/hc/en-us/articles/32199405667853-Version) |
+| `knowledge/v7-parameters.md` | Every V7 parameter (legacy, `--v 7`), prompt structure rules, breaking changes from V6 | [Official docs](https://docs.midjourney.com) |
 | `knowledge/translation-tables.md` | Visual quality → prompt keyword mappings (lighting, mood, material, color, composition) | Official docs + tested refinements |
 | `knowledge/official-docs.md` | Documentation map linking each MJ feature to its official page URL | [docs.midjourney.com](https://docs.midjourney.com) |
 | `knowledge/failure-modes.md` | Diagnostic framework for common MJ failure patterns | Session-learned, evidence-backed |
