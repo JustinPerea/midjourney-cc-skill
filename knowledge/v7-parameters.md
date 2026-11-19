@@ -1,5 +1,7 @@
 # Midjourney V7 Parameter Reference
 
+> **Legacy (V7 only).** V8.2 is now the default model (since July 24, 2026). `--oref`/`--ow`, `--q`, `--draft` and Turbo do **not** work on V8.1/V8.2. For the default model see `knowledge/v8-parameters.md`; use this file only for explicit `--v 7` work.
+
 *Last Updated: February 2026*
 
 ## Version Information

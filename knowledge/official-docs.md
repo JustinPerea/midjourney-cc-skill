@@ -1,6 +1,6 @@
 # Official Midjourney Documentation Reference
 
-*Last verified: February 7, 2026*
+*Last verified: November 19, 2026 (V8 pages added; other rows last checked February 7, 2026)*
 
 ## Purpose
 
@@ -39,7 +39,10 @@ Base URL: `https://docs.midjourney.com/hc/en-us/articles/`
 | Video | [37460773864589](https://docs.midjourney.com/hc/en-us/articles/37460773864589) | knowledge/v7-parameters.md (Video/Animation) | Covered |
 | Image Prompts | [32040250122381](https://docs.midjourney.com/hc/en-us/articles/32040250122381) | knowledge/v7-parameters.md (Image Prompts) | Covered |
 | Style Reference | [32180011136653](https://docs.midjourney.com/hc/en-us/articles/32180011136653) | knowledge/v7-parameters.md + rules/core-prompt-construction.md (Style Codes) | Covered |
-| Omni Reference | [36285124473997](https://docs.midjourney.com/hc/en-us/articles/36285124473997) | knowledge/v7-parameters.md (--oref) | Covered |
+| Version (V8.1 / V8.2) | [32199405667853](https://docs.midjourney.com/hc/en-us/articles/32199405667853-Version) | knowledge/v8-parameters.md | Covered |
+| Parameter List | [32859204029709](https://docs.midjourney.com/hc/en-us/articles/32859204029709-Parameter-List) | knowledge/v8-parameters.md | Covered |
+| Edit Model (`--edit`) | [48495453462797](https://docs.midjourney.com/hc/en-us/articles/48495453462797-Edit-Model) | knowledge/v8-parameters.md (Edit Model) | Covered |
+| Omni Reference | [36285124473997](https://docs.midjourney.com/hc/en-us/articles/36285124473997) | knowledge/v7-parameters.md (--oref) | Covered — V7 only, replaced by Edit Model in V8.x |
 | Character Reference | [32162917505293](https://docs.midjourney.com/hc/en-us/articles/32162917505293) | knowledge/v7-parameters.md (noted as deprecated) | Covered — legacy only |
 | Describe | [32497889043981](https://docs.midjourney.com/hc/en-us/articles/32497889043981) | knowledge/v7-parameters.md (Describe) | Covered |
 | Editor | [32764383466893](https://docs.midjourney.com/hc/en-us/articles/32764383466893) | knowledge/v7-parameters.md (Editor) | Covered |
